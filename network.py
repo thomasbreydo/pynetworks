@@ -1,7 +1,9 @@
 from graphviz import Digraph
 
 
-class Map:
+class Network:
+    '''Contain several interconnected ``Node`` objects.'''
+
     def __init__(self, name, nodes=None):
         self.name = name
         self.nodes = set(nodes) if nodes else set()
@@ -24,7 +26,7 @@ class Map:
 
 
 class Node:
-    '''Representation of a node in '''
+    '''Hold a graph theory node its connections.'''
 
     def __init__(self, name, connections=None):
         self.name = name
