@@ -9,6 +9,7 @@ from graphviz import Digraph
 
 
 class Network:
+    # TODO: parse from dotlang
     '''Contain several interconnected ``Node`` objects.'''
 
     def __init__(self, name, nodes=None):
