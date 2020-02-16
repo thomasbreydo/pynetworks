@@ -1,3 +1,5 @@
+'''This module provides structure for networks of interconnected nodes.'''
+
 from graphviz import Digraph
 
 
@@ -8,21 +10,23 @@ class Network:
         self.name = name
         self.nodes = set(nodes) if nodes else set()
 
-    def add(self, node):
-        self.nodes.add(node)
-
-    def remove(self, node):
-        self.nodes.remove(node)
-
     def __str__(self):
-        d = Digraph(self.name, graph_attr={'concentrate': 'true'})
+        graph = Digraph(self.name, graph_attr={'concentrate': 'true'})
         for node in self.nodes:
             if node.connections:
                 for connection in node.connections:
-                    d.edge(node.name, connection.name)
+                    graph.edge(node.name, connection.name)
             else:
-                d.node(node.name)
-        return str(d)
+                graph.node(node.name)
+        return str(graph)
+
+    def add(self, node):
+        '''Add ``node`` to this ``Network``.'''
+        self.nodes.add(node)
+
+    def remove(self, node):
+        '''Remove ``node`` from this ``Network``.'''
+        self.nodes.remove(node)
 
 
 class Node:
@@ -34,20 +38,21 @@ class Node:
         for node in self.connections:
             node.connections.add(self)
 
-    # TODO: ADD *UP
-    def connect(self, node):
-        self.connections.add(node)
-        node.connections.add(self)
-
-    def disconnect(self, node):
-        self.connections.remove(node)
-        node.connections.remove(self)
-
     def __str__(self):
-        d = Digraph()
+        graph = Digraph()
         if self.connections:
             for node in self.connections:
-                d.edge(self.name, node.name)
+                graph.edge(self.name, node.name)
         else:
-            d.node(self.name)
-        return str(d)
+            graph.node(self.name)
+        return str(graph)
+
+    def connect(self, other):
+        '''Add a connection between this ``Node`` and ``other``.'''
+        self.connections.add(other)
+        other.connections.add(self)
+
+    def disconnect(self, other):
+        '''Remove the connection between this ``Node`` and ``other``.'''
+        self.connections.remove(other)
+        other.connections.remove(self)
