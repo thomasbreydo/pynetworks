@@ -2,13 +2,13 @@ from setuptools import setup, find_packages
 
 
 def get_long_description():
-    with open('README.md') as f:
-        return f.read()
+    with open('README.md') as readme:
+        return readme.read()
 
 
 def get_dependencies():
-    with open('requirements.txt') as f:
-        return f.read().splitlines()
+    with open('requirements.txt') as requirements:
+        return requirements.read().splitlines()
 
 
 setup(
