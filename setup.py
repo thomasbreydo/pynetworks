@@ -12,7 +12,7 @@ def get_dependencies():
 
 
 setup(
-    name='nets-and-nodes',
+    name='pynetworks',
     version='0.1',
     author='Thomas Breydo',
     author_email='tbreydo@gmail.com',
@@ -22,5 +22,5 @@ setup(
     packages=find_packages(),
     license='GNU',
     install_requires=get_dependencies(),
-    url='https://github.com/thomasbreydo/nets-and-nodes',
+    url='https://github.com/thomasbreydo/pynetworks',
 )
