@@ -13,7 +13,7 @@ def get_dependencies():
 
 setup(
     name='pynetworks',
-    version='0.1.0',
+    version='0.1.1',
     author='Thomas Breydo',
     author_email='tbreydo@gmail.com',
     description='A Python implementation for networks of nodes',
