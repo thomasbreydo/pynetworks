@@ -23,4 +23,5 @@ setup(
     license='GNU',
     install_requires=get_dependencies(),
     url='https://github.com/thomasbreydo/pynetworks',
+    include_package_data=True
 )
