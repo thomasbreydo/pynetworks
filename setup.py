@@ -6,11 +6,6 @@ def get_long_description():
         return readme.read()
 
 
-def get_dependencies():
-    with open('requirements.txt') as requirements:
-        return requirements.read().splitlines()
-
-
 setup(
     name='pynetworks',
     version='0.2.1',
@@ -21,7 +16,6 @@ setup(
     long_description_content_type='text/markdown',
     packages=find_packages(),
     license='GNU',
-    install_requires=get_dependencies(),
     url='https://github.com/thomasbreydo/pynetworks',
     include_package_data=True
 )
