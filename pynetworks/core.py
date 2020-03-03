@@ -7,12 +7,12 @@ class Network:
 
     def __repr__(self):
         return (f'{self.__class__.__name__}('
-                f'{repr(self.connections) if self.connections else ""}'
+                f'{f"{self.connections!r}" if self.connections else ""}'
                 f'{f", {self.name!r}" if self.name else ""})')
 
     def __str__(self):
         links = "\n\t".join([con.graph() for con in self.connections])
-        return f'graph {self.name} {{\n\t{links}\n}}'
+        return f'graph{f" {self.name} " if self.name else " "}{{\n\t{links}\n}}'
 
     def from_dot(self, dot):
         # TODO: USE REG EXP to find and interpret a--b[label=label]
