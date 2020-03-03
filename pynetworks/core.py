@@ -1,57 +1,46 @@
-from graphviz import Digraph
-
-
 class Network:
-    # TODO: parse from dotlang
-    '''Contain several interconnected ``Node`` objects.'''
+    '''Contain several ``Connection`` objects in a named list.'''
 
-    def __init__(self, name, nodes=None):
-        self.name = name
-        self.nodes = set(nodes) if nodes else set()
+    def __init__(self, connections=None, name=None):
+        self.connections = list(connections) if connections else []
+        self.name = str(name) if name else ''
 
-    def __str__(self):
-        graph = Digraph(self.name, graph_attr={'concentrate': 'true'})
-        for node in self.nodes:
-            if node.connections:
-                for connection in node.connections:
-                    graph.edge(node.name, connection.name)
-            else:
-                graph.node(node.name)
-        return str(graph)
-
-    def add(self, node):
-        '''Add ``node`` to this ``Network``.'''
-        self.nodes.add(node)
-
-    def remove(self, node):
-        '''Remove ``node`` from this ``Network``.'''
-        self.nodes.remove(node)
-
-
-class Node:
-    '''Hold a graph theory node its connections.'''
-
-    def __init__(self, name, connections=None):
-        self.name = name
-        self.connections = set(connections) if connections else set()
-        for node in self.connections:
-            node.connections.add(self)
+    def __repr__(self):
+        return (f'{self.__class__.__name__}('
+                f'{repr(self.connections) if self.connections else ""}'
+                f'{f", {self.name!r}" if self.name else ""})')
 
     def __str__(self):
-        graph = Digraph()
-        if self.connections:
-            for node in self.connections:
-                graph.edge(self.name, node.name)
-        else:
-            graph.node(self.name)
-        return str(graph)
+        links = "\n\t".join([con.graph() for con in self.connections])
+        return f'graph {self.name} {{\n\t{links}\n}}'
 
-    def connect(self, other):
-        '''Add a connection between this ``Node`` and ``other``.'''
-        self.connections.add(other)
-        other.connections.add(self)
+    def from_dot(self, dot):
+        # TODO: USE REG EXP to find and interpret a--b[label=label]
+        pass
 
-    def disconnect(self, other):
-        '''Remove the connection between this ``Node`` and ``other``.'''
-        self.connections.remove(other)
-        other.connections.remove(self)
+
+class Connection:
+    '''Contain an optionally weighted connection between two nodes.'''
+
+    def __init__(self, node1, node2, weight=None):
+        self.node1 = node1
+        self.node2 = node2
+        self.nodes = {node1, node2}
+        self.weight = weight
+
+    def __repr__(self):
+        return (f'{self.__class__.__name__}({self.node1!r}, {self.node2!r}'
+                f'{f", {self.weight!r}" if self.weight else ""})')
+
+    def __str__(self):
+        return f'graph {{\n\t{self.graph()}\n}}'
+
+    def __eq__(self, other):
+        return self.nodes == other.nodes and self.weight == other.weight
+
+    def graph(self):
+        '''Return DOT language representation of this connection.'''
+        unlabeled = f'{self.node1} -- {self.node2}'
+        if self.weight:
+            return unlabeled + f' [label={self.weight}]'
+        return unlabeled
