@@ -35,11 +35,11 @@ class Connection:
         return dotgraph(connections=[self])
 
     def __eq__(self, other):
-        return (self.node1, self.node2, self.weight == (other.node1, other.node2, other.weight)
+        return (self.node1, self.node2, self.weight) == (other.node1, other.node2, other.weight)
 
     def edge(self):
         '''Return DOT language representation of this Connection.'''
-        unlabeled=f'{self.node1.name} -- {self.node2.name}'
+        unlabeled = f'{self.node1.name} -- {self.node2.name}'
         if self.weight:
             return unlabeled + f' [label={self.weight}]'
         return unlabeled
@@ -47,8 +47,8 @@ class Connection:
 
 class Node:
     def __init__(self, name, connections=None):
-        self.name=name
-        self.connections=list(connections) if connections else []
+        self.name = name
+        self.connections = list(connections) if connections else []
 
     def __str__(self):
         if self.connections:
@@ -65,13 +65,13 @@ class Node:
         other.connections.remove(Connection(other, self, weight))
 
     def clear_connections(self):
-        self.connections=[]
+        self.connections = []
 
 
 def dotgraph(single_nodes=[], connections=[], name=''):
     '''Return undirected graph'''
-    nodes='\n\t'.join([str(node.name) for node in single_nodes])
-    middle='\n\t' if single_nodes and connections else ''
-    edges='\n\t'.join([con.edge() for con in connections])
+    nodes = '\n\t'.join([str(node.name) for node in single_nodes])
+    middle = '\n\t' if single_nodes and connections else ''
+    edges = '\n\t'.join([con.edge() for con in connections])
     return (f'graph {f"{name} " if name else ""}'
             f'{{\n\t{nodes}{middle}{edges}\n}}')
