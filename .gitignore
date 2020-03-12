@@ -1,6 +1,6 @@
 bin
 include
-pyenv.cfg
+pyvenv.cfg
 .vscode
 
 # Byte-compiled / optimized / DLL files
