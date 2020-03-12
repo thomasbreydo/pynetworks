@@ -1,21 +1,32 @@
 class Network:
     '''Contain a network of interconnected `Node` objects.'''
 
-    def __init__(self, nodes=None, name=None):
-        self.nodes = set(nodes) if nodes else set()
-        self.connections = list(connections) if connections else []
-        self.all_nodes = self._reset_and_get_all_nodes()
-
+    def __init__(self, all_nodes=None, name=None):
+        self.all_nodes = set(all_nodes) if all_nodes else set()
         self.name = str(name) if name else ''
-
-# for con in self.connections:
-#             con.node1.connect(con.node2, con.weight)
+        self.update()  # set self.isolated_nodes and self.connections
 
     def __str__(self):
-        return dotgraph(self.single_nodes, self.connections, self.name)
+        return dotgraph(self.isolated_nodes, self.connections, self.name)
+
+    def update(self):
+        '''Update `self.connections` and `self.isolated_nodes`.'''
+        self.isolated_nodes = set()
+        self.connections = []
+        seen = set()  # store reverses of seen connections
+        for node in self.all_nodes:
+            if node.connections:
+                for con in node.connections:
+                    if con.reverse() in seen:
+                        continue  # opposite connection
+                    else:
+                        self.connections.append(con)
+                        seen.add(con)
+            else:
+                self.isolated_nodes.add(node)
 
     def from_dotgraph(self, dotgraph):
-        '''TODO: USE REG EXP to find and interpret a--b[label=label]'''
+        '''TODO: USE REG EXP to find and interpret a -- b [label=2]'''
         pass
 
 
@@ -34,8 +45,16 @@ class Connection:
     def __str__(self):
         return dotgraph(connections=[self])
 
+    def __hash__(self):
+        return hash(self.node1) ^ hash(self.node2) ^ hash(self.weight)
+
     def __eq__(self, other):
-        return (self.node1, self.node2, self.weight) == (other.node1, other.node2, other.weight)
+        return (self.node1, self.node2, self.weight) == (other.node1,
+                                                         other.node2,
+                                                         other.weight)
+
+    def reverse(self):
+        return Connection(self.node2, self.node1, self.weight)
 
     def edge(self):
         '''Return DOT language representation of this Connection.'''
@@ -46,14 +65,26 @@ class Connection:
 
 
 class Node:
-    def __init__(self, name, connections=None):
+    '''Contain a named node, with weighted connections.
+
+    `connected_to` is a list of tuples of the form `(node, weight)`
+    >>> Node('My Node', [(my_node1, 5), (my_node2, 4)])
+    '''
+
+    def __init__(self, name):
         self.name = name
-        self.connections = list(connections) if connections else []
+        self.connections = []
 
     def __str__(self):
         if self.connections:
             return dotgraph(connections=self.connections)
-        return dotgraph(single_nodes=[self])
+        return dotgraph(isolated_nodes=[self])
+
+    def __hash__(self):
+        return hash(id(self))
+
+    def __eq__(self, other):
+        return id(self) == id(other)
 
     def connect(self, other, weight=None):
         '''Add `Connection` between `self and `other` with weight `weight`.'''
@@ -68,10 +99,10 @@ class Node:
         self.connections = []
 
 
-def dotgraph(single_nodes=[], connections=[], name=''):
+def dotgraph(isolated_nodes=[], connections=[], name=''):
     '''Return undirected graph'''
-    nodes = '\n\t'.join([str(node.name) for node in single_nodes])
-    middle = '\n\t' if single_nodes and connections else ''
+    nodes = '\n\t'.join([str(node.name) for node in isolated_nodes])
+    middle = '\n\t' if isolated_nodes and connections else ''
     edges = '\n\t'.join([con.edge() for con in connections])
     return (f'graph {f"{name} " if name else ""}'
             f'{{\n\t{nodes}{middle}{edges}\n}}')
