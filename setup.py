@@ -8,7 +8,7 @@ def get_long_description():
 
 setup(
     name='pynetworks',
-    version='0.3.1',
+    version='0.3.2',
     author='Thomas Breydo',
     author_email='tbreydo@gmail.com',
     description='A Python implementation for networks of nodes.',
