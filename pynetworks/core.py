@@ -1,3 +1,6 @@
+import re
+
+
 class Network:
     '''Contain a network of interconnected `Node` objects.'''
 
@@ -58,7 +61,8 @@ class Connection:
 
     def edge(self):
         '''Return DOT language representation of this Connection.'''
-        unlabeled = f'{self.node1.name} -- {self.node2.name}'
+        unlabeled = (f'{escape_dot_ID(self.node1.name)} -- '
+                     f'{escape_dot_ID(self.node2.name)}')
         if self.weight:
             return unlabeled + f' [label={self.weight}]'
         return unlabeled
@@ -72,7 +76,7 @@ class Node:
     '''
 
     def __init__(self, name):
-        self.name = name
+        self.name = str(name)
         self.connections = []
 
     def __str__(self):
@@ -103,8 +107,17 @@ class Node:
 
 def dotgraph(isolated_nodes=[], connections=[], name=''):
     '''DOT representation of undirected graph with inputted properties.'''
-    nodes = '\n\t'.join([str(node.name) for node in isolated_nodes])
+    nodes = '\n\t'.join([escape_dot_ID(node.name) for node in isolated_nodes])
     middle = '\n\t' if isolated_nodes and connections else ''
     edges = '\n\t'.join([con.edge() for con in connections])
-    return (f'graph {f"{name} " if name else ""}'
+    return (f'graph {f"{escape_dot_ID(name)} " if name else ""}'
             f'{{\n\t{nodes}{middle}{edges}\n}}')
+
+
+def escape_dot_ID(string):
+    '''Surround in double quotes and escape all double quotes.
+
+    Ex. `James"Ruby` becomes `"James\\"Ruby"`
+    '''
+
+    return '"' + re.sub(r'([\\"])', r'\\\1', string) + '"'
