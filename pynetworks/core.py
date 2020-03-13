@@ -26,7 +26,7 @@ class Network:
                 self.isolated_nodes.add(node)
 
     def from_dotgraph(self, dotgraph):
-        '''TODO: USE REG EXP to find and interpret a -- b [label=2]'''
+        '''TODO: USE REG EXP to find and interpret a -- b [label=2].'''
         pass
 
 
@@ -87,20 +87,22 @@ class Node:
         return id(self) == id(other)
 
     def connect(self, other, weight=None):
-        '''Add `Connection` between `self and `other` with weight `weight`.'''
+        '''Add `Connection` between `self` and `other` with `weight`.'''
         self.connections.append(Connection(self, other, weight))
         other.connections.append(Connection(other, self, weight))
 
     def disconnect(self, other, weight=None):
+        '''Remove `Connection` between `self` and `other` with `weight`.'''
         self.connections.remove(Connection(self, other, weight))
         other.connections.remove(Connection(other, self, weight))
 
-    def clear_connections(self):
+    def isolate(self):
+        '''Remove all connections from `self.connections`.'''
         self.connections = []
 
 
 def dotgraph(isolated_nodes=[], connections=[], name=''):
-    '''Return undirected graph'''
+    '''DOT representation of undirected graph with inputted properties.'''
     nodes = '\n\t'.join([str(node.name) for node in isolated_nodes])
     middle = '\n\t' if isolated_nodes and connections else ''
     edges = '\n\t'.join([con.edge() for con in connections])
