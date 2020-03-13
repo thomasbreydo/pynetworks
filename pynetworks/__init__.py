@@ -7,4 +7,4 @@ the DOT language for representation.
 '''
 
 __version__ = "0.3.0"
-from .core import Network, Connection, Node, graph
+from .core import Network, Connection, Node, dotgraph
