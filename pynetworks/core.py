@@ -105,6 +105,11 @@ class Node:
         self.connections = []
 
 
+class Path:
+    def __init__(self, connections):
+        self.connections = connections
+
+
 def dotgraph(isolated_nodes=[], connections=[], name=''):
     '''DOT representation of undirected graph with inputted properties.'''
     nodes = '\n\t'.join([escape_dot_ID(node.name) for node in isolated_nodes])
