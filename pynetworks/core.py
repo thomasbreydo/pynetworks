@@ -1,4 +1,5 @@
 import re
+import functools
 
 
 class Network:
@@ -106,8 +107,59 @@ class Node:
 
 
 class Path:
-    def __init__(self, connections):
-        self.connections = connections
+    def __init__(self, connections=None):
+        self.connections = list(connections) if connections else []
+
+    @property
+    def length(self):
+        return sum(con.weight for con in self.connections)
+
+    def __str__(self):
+        return dotgraph(connections=self.connections)
+
+    def __add__(self, other):
+        return Path(self.connections + other.connections)
+
+
+'''TODO: rework. right now, memoize isn't the best solution bc if Node gains
+more connections, the memoized path func still thinks it has its old connections.
+'''
+
+
+def memoize(shortest_path_func):
+    memo = {}
+
+    def memoized_shortest_path_func(start, end, visited=None):
+        # visited doesn't affect memo, also it's unhashable
+        key = (start, end)
+        try:
+            return memo[key]
+        except KeyError:
+            memo[key] = shortest_path_func(start, end, visited)
+        return memo[key]
+    return memoized_shortest_path_func
+
+
+@memoize
+def shortest_path(start, end, visited=None):
+    '''Find the shortest path between `start` and `end`.'''
+    if start == end:
+        return Path()
+    if not visited:
+        visited = set()
+
+    paths = []
+    for con in start.connections:
+        if con.node2 not in visited:
+            path = shortest_path(con.node2, end, visited | {
+                                 start})
+            if path:
+                paths.append(path + Path([con]))
+
+    try:
+        return min(paths, key=lambda path: path.length)
+    except ValueError:
+        pass
 
 
 def dotgraph(isolated_nodes=[], connections=[], name=''):
@@ -122,7 +174,39 @@ def dotgraph(isolated_nodes=[], connections=[], name=''):
 def escape_dot_ID(string):
     '''Surround in double quotes and escape all double quotes.
 
-    Ex. `James"Ruby` becomes `"James\\"Ruby"`
+    Ex. `A"B` becomes `"A\\"B"`
     '''
 
     return '"' + re.sub(r'([\\"])', r'\\\1', string) + '"'
+
+
+def main():
+    a = Node('a')
+    b = Node('b')
+    c = Node('c')
+    d = Node('d')
+    e = Node('e')
+    f = Node('f')
+    g = Node('g')
+    h = Node('h')
+    i = Node('i')
+    j = Node('j')
+
+    a.connect(d, 2)
+    b.connect(c, 2)
+    b.connect(d, 3)
+    c.connect(d, 3)
+    d.connect(j, 1.5)
+    j.connect(i, 2.5)
+    j.connect(e, 4)
+    j.connect(f, 5)
+    j.connect(g, 4)
+    e.connect(g, 5)
+    f.connect(g, 3)
+    g.connect(h, 2)
+
+    print(shortest_path(a, h))
+
+
+if __name__ == "__main__":
+    main()
