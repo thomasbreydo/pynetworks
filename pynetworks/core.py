@@ -122,7 +122,7 @@ class Path:
 
 
 '''TODO: rework. right now, memoize isn't the best solution bc if Node gains
-more connections, the memoized path func still thinks it has its old connections.
+more connections, the memoized path func still thinks it has its old connections
 '''
 
 
