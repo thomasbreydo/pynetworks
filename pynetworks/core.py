@@ -1,5 +1,4 @@
 import re
-import functools
 
 
 class Network:
@@ -121,11 +120,6 @@ class Path:
         return Path(self.connections + other.connections)
 
 
-'''TODO: rework. right now, memoize isn't the best solution bc if Node gains
-more connections, the memoized path func still thinks it has its old connections
-'''
-
-
 def memoize(shortest_path_func):
     memo = {}
 
@@ -137,6 +131,12 @@ def memoize(shortest_path_func):
         except KeyError:
             memo[key] = shortest_path_func(start, end, visited)
         return memo[key]
+
+    def clear_cache():
+        nonlocal memo  # uses memo from enclosing scope
+        memo = {}
+
+    memoized_shortest_path_func.clear_cache = clear_cache
     return memoized_shortest_path_func
 
 
@@ -178,35 +178,3 @@ def escape_dot_ID(string):
     '''
 
     return '"' + re.sub(r'([\\"])', r'\\\1', string) + '"'
-
-
-def main():
-    a = Node('a')
-    b = Node('b')
-    c = Node('c')
-    d = Node('d')
-    e = Node('e')
-    f = Node('f')
-    g = Node('g')
-    h = Node('h')
-    i = Node('i')
-    j = Node('j')
-
-    a.connect(d, 2)
-    b.connect(c, 2)
-    b.connect(d, 3)
-    c.connect(d, 3)
-    d.connect(j, 1.5)
-    j.connect(i, 2.5)
-    j.connect(e, 4)
-    j.connect(f, 5)
-    j.connect(g, 4)
-    e.connect(g, 5)
-    f.connect(g, 3)
-    g.connect(h, 2)
-
-    print(shortest_path(a, h))
-
-
-if __name__ == "__main__":
-    main()
