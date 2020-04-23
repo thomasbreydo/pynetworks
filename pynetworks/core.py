@@ -1,4 +1,5 @@
 import re
+import random
 
 
 class Network:
@@ -178,3 +179,39 @@ def escape_dot_ID(string):
     '''
 
     return '"' + re.sub(r'([\\"])', r'\\\1', string) + '"'
+
+
+def generate_map(n_nodes=10, lower_bound=1, upper_bound=11,
+                 connection_prob=0.8):
+    '''Return a set of `n_nodes` interconnected `Node` objects.
+
+    Keyword arguments:
+
+    n_nodes -- number of nodes (default 10)
+
+    lower_bound -- inclusive lower bound for connection weight (default 
+    1)
+
+    upper_bound -- exclusive upper bound for connections weight (default
+    11)
+
+    connections_prob -- probability of any two nodes being connected (de
+    fault 0.8)
+    '''
+
+    nodes = {Node(f'Node {i}') for i in range(n_nodes)}
+    done = set()
+
+    for cur_node in nodes:
+        done.add(cur_node)
+        for other_node in nodes:
+            if other_node not in done and random.random() < connection_prob:
+                try:
+                    cur_node.connect(other_node, random.randint(
+                        lower_bound, upper_bound - 1))
+                except ValueError as err:
+                    raise ValueError("'lower_bound' and 'upper_bound' must be"
+                                     " positive integers with 'lower_bound' <"
+                                     "= 'upper_bound'.")
+
+    return done
