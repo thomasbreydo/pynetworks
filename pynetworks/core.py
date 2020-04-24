@@ -3,7 +3,22 @@ import random
 
 
 class Network:
-    '''Contain a network of interconnected `Node` objects.'''
+    '''Contain a network of interconnected `Node` objects.
+
+    Attributes:
+    --
+    - `self.all_nodes`: `set` of all nodes in this network (default
+    `set()`).
+    - `self.name`: `name` of this network (type `str`, default `''`).
+    - `self.isolated_nodes`: `set` of all nodes with no connections.
+    - `self.connections`: `list` of all connections in this `Network`.
+
+    Methods:
+    --
+    - `self.update()`: update `self.connections` and
+    `self.isolated_nodes`; run when `Node` objects in this network have
+    changed.
+    '''
 
     def __init__(self, all_nodes=None, name=None):
         self.all_nodes = set(all_nodes) if all_nodes else set()
@@ -14,7 +29,9 @@ class Network:
         return dotgraph(self.isolated_nodes, self.connections, self.name)
 
     def update(self):
-        '''Update `self.connections` and `self.isolated_nodes`.'''
+        '''Update `self.connections` and `self.isolated_nodes`; run
+        when `Node` objects in this network have changed.
+        '''
         self.isolated_nodes = set()
         self.connections = []
         seen = set()  # store reverses of seen connections
@@ -22,20 +39,33 @@ class Network:
             if node.connections:
                 for con in node.connections:
                     if con.reverse() in seen:
-                        continue  # opposite connection
+                        # just node2 of an already-stored connection -> ignore
+                        continue
                     else:
                         self.connections.append(con)
                         seen.add(con)
             else:
                 self.isolated_nodes.add(node)
 
-    def from_dotgraph(self, dotgraph):
-        '''TODO: USE REG EXP to find and interpret a -- b [label=2].'''
-        pass
-
 
 class Connection:
-    '''Represent an optionally weighted connection between two nodes.'''
+    '''Represent an optionally weighted connection between two `Node`
+    objects.
+
+    Attributes:
+    --
+    - `self.node1`: first `Node` in this `Connection`
+    - `self.node2`: second `Node` in this `Connection`
+    - `weight`: weight of this `Connection` (usually numerical, default
+    `None`)
+
+    Methods:
+    --
+    - `self.reverse()`: return a `Connection` with the same `node1`,
+    `node2`, and `weight`, BUT `node1` and `node2` swap.
+    - `self.dot()`: return DOT language representation of this
+    `Connection` object.
+    '''
 
     def __init__(self, node1, node2, weight=None):
         self.node1 = node1
@@ -58,12 +88,18 @@ class Connection:
                                                          other.weight)
 
     def reverse(self):
+        '''Return:
+        --
+        A `Connection` with the same `node1`, `node2`, and `weight`,
+        BUT `node1` and `node2` swap.'''
         return Connection(self.node2, self.node1, self.weight)
 
-    def edge(self):
-        '''Return DOT language representation of this Connection.'''
-        unlabeled = (f'{escape_dot_ID(self.node1.name)} -- '
-                     f'{escape_dot_ID(self.node2.name)}')
+    def dot(self):
+        '''Return:
+        --
+        A DOT language representation of this `Connection` object.'''
+        unlabeled = (f'{escape_dot_id(self.node1.name)}: '
+                     f'{escape_dot_id(self.node2.name)}')
         if self.weight:
             return unlabeled + f' [label={self.weight}]'
         return unlabeled
@@ -72,8 +108,29 @@ class Connection:
 class Node:
     '''Contain a named node, with weighted connections.
 
-    `connected_to` is a list of tuples of the form `(node, weight)`
-    >>> Node('My Node', [(my_node1, 5), (my_node2, 4)])
+    Attributes
+    --
+    - `self.name`: name of this `Node` (type `str`).
+    - `self.connections`: list of connected `Node` objects (inital
+    value `[]`).
+
+    Methods
+    --
+    - `self.connect(other, weight)`: add `Connection` between `self`
+    and `other` with `weight`.
+    - `self.disconnect(other, weight)`: remove `Connection` between
+    `self` and `other` with `weight`.
+    - `self.isolate()`: disconnect from all connected `Node` objects.
+
+    Example:
+    --
+    >>> a = Node('A')
+    >>> b = Node('B')
+    >>> a.connect(b, 3)
+    >>> print(a)
+    graph {
+        "A"
+    }
     '''
 
     def __init__(self, name):
@@ -102,17 +159,21 @@ class Node:
         other.connections.remove(Connection(other, self, weight))
 
     def isolate(self):
-        '''Remove all connections from `self.connections`.'''
+        '''Disconnect from all connected `Node` objects.'''
         self.connections = []
 
 
 class Path:
+    '''Store `Connection` objects connecting two `Node` objects.
+
+    Attributes
+    --
+    `weight`: sum of the weights of all of the `Connection` objects in
+    this `Path` (type: `int`).
+    '''
+
     def __init__(self, connections=None):
         self.connections = list(connections) if connections else []
-
-    @property
-    def length(self):
-        return sum(con.weight for con in self.connections)
 
     def __str__(self):
         return dotgraph(connections=self.connections)
@@ -120,17 +181,25 @@ class Path:
     def __add__(self, other):
         return Path(self.connections + other.connections)
 
+    @property
+    def weight(self):
+        '''Property attribute: sum of the weights of all of the
+        `Connection` objects in this `Path` (type: `int`).
+        '''
+        return sum(con.weight for con in self.connections)
+
 
 def memoize(shortest_path_func):
+    '''Memoize the `shortest_path()` function defined below.'''
     memo = {}
 
-    def memoized_shortest_path_func(start, end, visited=None):
-        # visited doesn't affect memo, also it's unhashable
+    def memoized_shortest_path_func(start, end, _visited=None):
+        # _visited doesn't affect memo, also it's unhashable
         key = (start, end)
         try:
             return memo[key]
         except KeyError:
-            memo[key] = shortest_path_func(start, end, visited)
+            memo[key] = shortest_path_func(start, end, _visited)
         return memo[key]
 
     def clear_cache():
@@ -138,44 +207,103 @@ def memoize(shortest_path_func):
         memo = {}
 
     memoized_shortest_path_func.clear_cache = clear_cache
+    memoized_shortest_path_func.__doc__ = shortest_path_func.__doc__
+
     return memoized_shortest_path_func
 
 
 @memoize
-def shortest_path(start, end, visited=None):
-    '''Find the shortest path between `start` and `end`.'''
+def shortest_path(start, end, _visited=None):
+    '''Find the shortest path between `start` and `end`.
+
+    Arguments:
+    --
+    - `start`: starting `Node` object (type: `Node`).
+    - `end`: final `Node` object (type: `Node`).
+
+    Return:
+    --
+    If a path exists from `start` to `end`, return that `Path` object.
+    Otherwise, return `None`.
+    '''
     if start == end:
         return Path()
-    if not visited:
-        visited = set()
+    if not _visited:
+        _visited = set()
 
     paths = []
     for con in start.connections:
-        if con.node2 not in visited:
-            path = shortest_path(con.node2, end, visited | {
-                                 start})
+        if con.node2 not in _visited:
+            path = shortest_path(con.node2, end, _visited | {start})
             if path:
                 paths.append(path + Path([con]))
 
     try:
-        return min(paths, key=lambda path: path.length)
+        return min(paths, key=lambda path: path.weight)
     except ValueError:
         pass
 
 
-def dotgraph(isolated_nodes=[], connections=[], name=''):
-    '''DOT representation of undirected graph with inputted properties.'''
-    nodes = '\n\t'.join([escape_dot_ID(node.name) for node in isolated_nodes])
+def dotgraph(isolated_nodes=None, connections=None, name=''):
+    '''Generate a DOT graph out of nodes and connections.
+
+    Arguments:
+    --
+    - `isolated_nodes`: list of `Node` objects with no connections to
+    graph (type `list`, default `[]`).
+    - `connections`: list of `Connection` objects to graph (type `list`,
+    default `[]`).
+    - `name`: name of returned dotgraph (type `str`, default `''`).
+
+    Return:
+    --
+    A valid DOT graph (`str`).
+
+    Examples:
+    --
+    ### One isolated `Node` object.
+    >>> a = Node('A')
+    >>> print(dotgraph(isolated_nodes=[a], name='My Graph'))
+    graph "My Graph" {
+        "A"
+    }
+
+    ### Two connected `Node` objects.
+    >>> b = Node('B')
+    >>> c = Node('C')
+    >>> b.connect(c, 5)
+    >>> print(dotgraph(connections=b.connections))
+    graph {
+        "B" -- "C" [label=5]
+    }
+    '''
+    if isolated_nodes is None:
+        isolated_nodes = []
+    if connections is None:
+        connections = []
+
+    nodes = '\n\t'.join([escape_dot_id(node.name) for node in isolated_nodes])
     middle = '\n\t' if isolated_nodes and connections else ''
-    edges = '\n\t'.join([con.edge() for con in connections])
-    return (f'graph {f"{escape_dot_ID(name)} " if name else ""}'
+    edges = '\n\t'.join([con.dot() for con in connections])
+    return (f'graph {f"{escape_dot_id(name)} " if name else ""}'
             f'{{\n\t{nodes}{middle}{edges}\n}}')
 
 
-def escape_dot_ID(string):
+def escape_dot_id(string):
     '''Surround in double quotes and escape all double quotes.
 
-    Ex. `A"B` becomes `"A\\"B"`
+    Arguments:
+    --
+    - `string`: the id to escape (type `str`).
+
+    Return:
+    --
+    A valid, escaped id for a DOT graph (type `str`).
+
+    Example:
+    --
+    >>> escape_dot_id('A"B')
+    '"A\\"B"'
     '''
 
     return '"' + re.sub(r'([\\"])', r'\\\1', string) + '"'
@@ -183,23 +311,22 @@ def escape_dot_ID(string):
 
 def generate_map(n_nodes=10, lower_bound=1, upper_bound=11,
                  connection_prob=0.8):
-    '''Return a set of `n_nodes` interconnected `Node` objects.
+    '''Arguments:
+    --
+    - `n_nodes`: number of nodes (type `int`, default `10`).
+    - `lower_bound`:  lower bound (inclusive) of range of connections'
+    weights (type `int`, default `1`).
+    - `upper_bound`: upper bound (exclusive) for range of connections'
+    weights (type `int`, default `11`).
+    - `connections_prob`: probability betweeen 0 and 1 of any two nodes
+    being connected (type `float`, default `0.8`).
 
-    Keyword arguments:
-
-    n_nodes -- number of nodes (default 10)
-
-    lower_bound -- inclusive lower bound for connection weight (default 
-    1)
-
-    upper_bound -- exclusive upper bound for connections weight (default
-    11)
-
-    connections_prob -- probability of any two nodes being connected (de
-    fault 0.8)
+    Return:
+    --
+    A `set` of `n_nodes` interconnected `Node` objects.
     '''
 
-    nodes = {Node(f'Node {i}') for i in range(n_nodes)}
+    nodes = {Node(f'Node {i}') for i in range(int(n_nodes))}
     done = set()
 
     for cur_node in nodes:
@@ -209,7 +336,7 @@ def generate_map(n_nodes=10, lower_bound=1, upper_bound=11,
                 try:
                     cur_node.connect(other_node, random.randint(
                         lower_bound, upper_bound - 1))
-                except ValueError as err:
+                except ValueError:
                     raise ValueError("'lower_bound' and 'upper_bound' must be"
                                      " positive integers with 'lower_bound' <"
                                      "= 'upper_bound'.")
