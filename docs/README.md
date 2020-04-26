@@ -59,7 +59,7 @@ graph {
 >>> print(net)
 graph {
 	"C"
-	"A" \-\- "B" [label=3]
+	"A" \-- "B" [label=3]
 }
 ```
 
