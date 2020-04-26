@@ -26,7 +26,7 @@ Read the full documentation for **pymastermind** [here](https://pynetworks.readt
 >>> a.connect(b, 3)
 >>> print(a)
 graph {
-    "A" -- "B" [label=3]
+    "A" \-\- "B" [label=3]
 }
 ```
 
@@ -43,8 +43,8 @@ graph {
 8
 >>> print(path)
 graph {
-    "B" -- "C" [label=5]
-    "A" -- "B" [label=3]
+    "B" \-\- "C" [label=5]
+    "A" \-\- "B" [label=3]
 }
 ```
 
@@ -59,7 +59,7 @@ graph {
 >>> print(net)
 graph {
 	"C"
-	"A" -- "B" [label=3]
+	"A" \-\- "B" [label=3]
 }
 ```
 

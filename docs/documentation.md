@@ -30,7 +30,7 @@ Contain a named node, with weighted connections.
 >>> a.connect(b, 3)
 >>> print(a)
 graph {
-    "A" -- "B" [label=3]
+    "A" \-\- "B" [label=3]
 }
 ```
 
@@ -137,7 +137,7 @@ A valid DOT graph (`str`).
 >>> b.connect(c, 5)
 >>> print(dotgraph(connections=b.connections))
 >>> graph {
-    "B" -- "C" [label=5]
+    "B" \-\- "C" [label=5]
 }
 ```
 
