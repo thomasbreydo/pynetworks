@@ -2,7 +2,7 @@
 
 A Python package that provides structure for networks of interconnected nodes using the [DOT language](<https://en.wikipedia.org/wiki/DOT_(graph_description_language)>) for representation.
 
-## Clases
+## Classes
 
 ### Node
 
