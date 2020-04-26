@@ -14,7 +14,7 @@ pip install pynetworks
 
 ## Documentation
 
-Read the full documentation for **pymastermind** [here](https://pynetworks.readthedocs.io).
+Read the full documentation for **pynetworks** [here](https://pynetworks.readthedocs.io).
 
 ## Example Usage
 
