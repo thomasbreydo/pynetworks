@@ -98,7 +98,7 @@ class Connection:
         '''Return:
         --
         A DOT language representation of this `Connection` object.'''
-        unlabeled = (f'{escape_dot_id(self.node1.name)}: '
+        unlabeled = (f'{escape_dot_id(self.node1.name)} -- '
                      f'{escape_dot_id(self.node2.name)}')
         if self.weight:
             return unlabeled + f' [label={self.weight}]'
@@ -129,7 +129,7 @@ class Node:
     >>> a.connect(b, 3)
     >>> print(a)
     graph {
-        "A"
+        "A" -- "B" [label=3]
     }
     '''
 
@@ -149,12 +149,16 @@ class Node:
         return id(self) == id(other)
 
     def connect(self, other, weight=None):
-        '''Add `Connection` between `self` and `other` with `weight`.'''
+        '''Add `Connection` between `self` and `other` with
+        `weight`.
+        '''
         self.connections.append(Connection(self, other, weight))
         other.connections.append(Connection(other, self, weight))
 
     def disconnect(self, other, weight=None):
-        '''Remove `Connection` between `self` and `other` with `weight`.'''
+        '''Remove `Connection` between `self` and `other` with
+        `weight`.
+        '''
         self.connections.remove(Connection(self, other, weight))
         other.connections.remove(Connection(other, self, weight))
 
@@ -168,8 +172,10 @@ class Path:
 
     Attributes
     --
-    `weight`: sum of the weights of all of the `Connection` objects in
-    this `Path` (type: `int`).
+    `self.connections`: `list` of all `Connection` objects in this
+    `Path`.
+    `self.weight`: sum of the weights of all `Connection` objects in
+    this `Path` (usually numerical).
     '''
 
     def __init__(self, connections=None):
