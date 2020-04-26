@@ -65,4 +65,4 @@ graph {
 
 ## License
 
-[GNU](/LICENSE)
+[GNU](/LICENSE).
