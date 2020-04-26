@@ -57,9 +57,11 @@ graph {
 >>> a.connect(b, 3)
 >>> net = Network([a, b, c])
 >>> print(net)
+```
+```
 graph {
 	"C"
-	"A" \-- "B" [label=3]
+	"A" -- "B" [label=3]
 }
 ```
 
