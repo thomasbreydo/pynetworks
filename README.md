@@ -8,4 +8,5 @@ A package that provides structure for networks of interconnected nodes using the
 
 `pip install pynetworks`
 
-## Usage
+## Coming soon
+Full documentation hosted on (readthedocs.org).
