@@ -24,9 +24,13 @@ Read the full documentation for **pymastermind** [here](https://pynetworks.readt
 >>> a = Node('A')
 >>> b = Node('B')
 >>> a.connect(b, 3)
->>> print(a)
+```
+
+Printing `a` gives:
+
+```
 graph {
-    "A" \-\- "B" [label=3]
+    "A" -- "B" [label=3]
 }
 ```
 
@@ -41,10 +45,14 @@ graph {
 >>> path = shortest_path(a, c)
 >>> path.weight
 8
->>> print(path)
+```
+
+Printing `path` gives:
+
+```
 graph {
-    "B" \-\- "C" [label=5]
-    "A" \-\- "B" [label=3]
+    "B" -- "C" [label=5]
+    "A" -- "B" [label=3]
 }
 ```
 
@@ -56,10 +64,14 @@ graph {
 >>> c = Node('C')
 >>> a.connect(b, 3)
 >>> net = Network([a, b, c])
->>> print(net)
+```
+
+Printing `net` gives:
+
+```
 graph {
 	"C"
-	"A" \-- "B" [label=3]
+	"A" -- "B" [label=3]
 }
 ```
 
