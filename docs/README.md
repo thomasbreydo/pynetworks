@@ -48,7 +48,7 @@ graph {
 }
 ```
 
-### Network
+### `Network`
 
 ```python3
 >>> a = Node('A')
