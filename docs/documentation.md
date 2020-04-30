@@ -167,7 +167,8 @@ A valid, escaped id for a DOT graph (type `str`).
 - `n_nodes`: number of nodes (type `int`, default `10`).
 - `lower_bound`: lower bound (inclusive) of range of connections' weights (type `int`, default `1`).
 - `upper_bound`: upper bound (exclusive) for range of connections' weights (type `int`, default `11`).
-- `connections_prob`: probability betweeen 0 and 1 of any two nodes being connected (type `float`, default `0.8`).
+- `connections_prob`: probability betweeen 0 and 1 of any two nodes being connected (type `float`, default `0.8`). If `force_connected` is set to `True`, this setting might be overridden.
+- `force_connected`: if `False`, output can be a disconnected network (type `bool`, default `True`).
 
 #### Return:
 
