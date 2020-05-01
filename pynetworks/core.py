@@ -11,7 +11,7 @@ class Node:
     - `self.connections`: list of connected `Node` objects (inital
     value `[]`).
 
-    Methods
+    Methods:
     --
     - `self.connect(other, weight)`: add `Connection` between `self`
     and `other` with `weight`.
