@@ -8,7 +8,7 @@ A Python package that provides structure for networks of interconnected nodes us
 
 Contain a named node, with weighted connections.
 
-#### Attributes
+#### Attributes:
 
 - `self.name`: name of this `Node` (type `str`).
 - `self.connections`: list of connected `Node` objects (inital
@@ -41,10 +41,10 @@ objects.
 
 #### Attributes:
 
-- `self.node1`: first `Node` in this `Connection`
-- `self.node2`: second `Node` in this `Connection`
+- `self.node1`: first `Node` in this `Connection`.
+- `self.node2`: second `Node` in this `Connection`.
 - `weight`: weight of this `Connection` (usually numerical, default
-  `None`)
+  `None`).
 
 #### Methods:
 
@@ -75,14 +75,14 @@ Contain a network of interconnected `Node` objects.
 
 Store `Connection` objects connecting two `Node` objects.
 
-#### Attributes
+#### Attributes:
 
 - `self.connections`: `list` of all `Connection` objects in this
   `Path`.
 - `self.weight`: sum of the weights of all `Connection` objects in
   this `Path` (usually numerical).
 
-#### Methods
+#### Methods:
 
 - `self.__add__(other)`: return a combined `Path` of `self` and `other`.
 
@@ -94,8 +94,8 @@ Find the shortest path between `start` and `end`.
 
 #### Arguments:
 
-- `start`: starting `Node` object (type: `Node`).
-- `end`: final `Node` object (type: `Node`).
+- `start`: starting `Node` object (type `Node`).
+- `end`: final `Node` object (type `Node`).
 
 #### Return:
 
@@ -107,8 +107,8 @@ Check if a path exists between `start` and `end`.
 
 #### Arguments:
 
-- `start`: starting `Node` object (type: `Node`).
-- `end`: final `Node` object (type: `Node`).
+- `start`: starting `Node` object (type `Node`).
+- `end`: final `Node` object (type `Node`).
 
 #### Return:
 
@@ -116,12 +116,12 @@ Check if a path exists between `start` and `end`.
 
 ### shortest_path_through_network
 
-Find the shortest path from `start` through all `Node` objects in `network`.'
+Find the shortest path from `start` through all `Node` objects in `network`.
 
 #### Arguments:
 
-- `start`: first `Node` in the returned `Path`.
-- `network`: `Network` of `Node` objects containing `start`.
+- `start`: first `Node` in the returned `Path` (type `Node`).
+- `network`: `Network` of `Node` objects containing `start` (type `Network`).
 
 #### Return:
 

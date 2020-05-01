@@ -5,7 +5,7 @@ import re
 class Node:
     '''Contain a named node, with weighted connections.
 
-    Attributes
+    Attributes:
     --
     - `self.name`: name of this `Node` (type `str`).
     - `self.connections`: list of connected `Node` objects (inital
@@ -70,10 +70,10 @@ class Connection:
 
     Attributes:
     --
-    - `self.node1`: first `Node` in this `Connection`
-    - `self.node2`: second `Node` in this `Connection`
+    - `self.node1`: first `Node` in this `Connection`.
+    - `self.node2`: second `Node` in this `Connection`.
     - `weight`: weight of this `Connection` (usually numerical, default
-    `None`)
+    `None`).
 
     Methods:
     --
@@ -170,14 +170,14 @@ class Network:
 class Path:
     '''Store `Connection` objects connecting two `Node` objects.
 
-    Attributes
+    Attributes:
     --
     - `self.connections`: `list` of all `Connection` objects in this
     `Path`.
     - `self.weight`: sum of the weights of all `Connection` objects in
     this `Path` (usually numerical).
 
-    Methods
+    Methods:
     --
     - `self.__add__(other)`: return a combined `Path` of `self` and
     `other`.
@@ -202,7 +202,7 @@ class Path:
     @property
     def weight(self):
         '''Property attribute: sum of the weights of all of the
-        `Connection` objects in this `Path` (type: `int`).
+        `Connection` objects in this `Path` (type `int`).
         '''
         return sum(con.weight for con in self.connections)
 
@@ -238,8 +238,8 @@ def shortest_path(start, end, _visited=None):
 
     Arguments:
     --
-    - `start`: starting `Node` object (type: `Node`).
-    - `end`: final `Node` object (type: `Node`).
+    - `start`: starting `Node` object (type `Node`).
+    - `end`: final `Node` object (type `Node`).
 
     Return:
     --
@@ -270,8 +270,8 @@ def path_exists(start, end, _visited=None):
 
     Arguments:
     --
-    - `start`: starting `Node` object (type: `Node`).
-    - `end`: final `Node` object (type: `Node`).
+    - `start`: starting `Node` object (type `Node`).
+    - `end`: final `Node` object (type `Node`).
 
     Return:
     --
@@ -293,12 +293,13 @@ def path_exists(start, end, _visited=None):
 @memoize
 def shortest_path_through_network(start, network, _visited=None):
     '''Find the shortest path from `start` through all `Node` objects
-    in `network`.'
+    in `network`.
 
     Arguments:
     --
-    - `start`: first `Node` in the returned `Path`.
-    - `network`: `Network` of `Node` objects containing `start`.
+    - `start`: first `Node` in the returned `Path` (type `Node`).
+    - `network`: `Network` of `Node` objects containing `start` (type
+    `Network`).
 
     Return:
     --
