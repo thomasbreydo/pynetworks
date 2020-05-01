@@ -101,7 +101,34 @@ Find the shortest path between `start` and `end`.
 
 If a path exists from `start` to `end`, return that `Path` object. Otherwise, return `None`.
 
-###
+### path_exists
+
+Check if a path exists between `start` and `end`.
+
+#### Arguments:
+
+- `start`: starting `Node` object (type: `Node`).
+- `end`: final `Node` object (type: `Node`).
+
+#### Return:
+
+`True` if a path exists, otherwise `False`.
+
+### shortest_path_through_network
+
+Find the shortest path from `start` through all `Node` objects in `network`.'
+
+#### Arguments:
+
+- `start`: first `Node` in the returned `Path`.
+- `network`: `Network` of `Node` objects containing `start`.
+
+#### Return:
+
+If a path exists from `start` to `end`, return that `Path` object.
+Otherwise, return `None`.
+
+### dotgraph
 
 Generate a DOT graph out of nodes and connections.
 
@@ -162,6 +189,8 @@ A valid, escaped id for a DOT graph (type `str`).
 
 ### generate_network
 
+Create a `Network` of `Node` objects.
+
 #### Arguments:
 
 - `n_nodes`: number of nodes (type `int`, default `10`).
@@ -172,4 +201,4 @@ A valid, escaped id for a DOT graph (type `str`).
 
 #### Return:
 
-A `set` of `n_nodes` interconnected `Node` objects.
+A `Network` of `n_nodes` interconnected `Node` objects.
