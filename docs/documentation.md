@@ -202,3 +202,18 @@ Create a `Network` of `Node` objects.
 #### Return:
 
 A `Network` of `n_nodes` interconnected `Node` objects.
+
+### fully_connected
+
+Check if `network_or_iterable` is a fully connected network of
+nodes.
+
+#### Arguments:
+
+- `network_or_iterable`: `Network` or other iterable collection of
+  `Node` objects (type `Network` or iterable).
+
+#### Return:
+
+`True` if `network_or_iterable` is fully connected, otherwise
+`False`.

@@ -147,6 +147,9 @@ class Network:
     def __str__(self):
         return dotgraph(self.isolated_nodes, self.connections, self.name)
 
+    def __iter__(self):
+        yield from self.all_nodes
+
     def update(self):
         '''Update `self.connections` and `self.isolated_nodes`; run
         when `Node` objects in this network have changed.
@@ -213,13 +216,13 @@ def memoize(shortest_path_func):
     '''
     memo = {}
 
-    def memoized_shortest_path_func(start, end, _visited=None):
-        # _visited doesn't affect memo, also it's unhashable
-        key = (start, end)
+    def memoized_shortest_path_func(*args, _visited=None):
+        # doesn't affect memo, also it's unhashable
+        key = tuple(args)
         try:
             return memo[key]
         except KeyError:
-            memo[key] = shortest_path_func(start, end, _visited)
+            memo[key] = shortest_path_func(*args, _visited)
         return memo[key]
 
     def clear_cache():
@@ -254,7 +257,7 @@ def shortest_path(start, end, _visited=None):
     paths = []
     for con in start.connections:
         if con.node2 not in _visited:
-            path = shortest_path(con.node2, end, _visited | {start})
+            path = shortest_path(con.node2, end, _visited=_visited | {start})
             if path:
                 paths.append(path + Path([con]))
 
@@ -285,7 +288,7 @@ def path_exists(start, end, _visited=None):
 
     for con in start.connections:
         if con.node2 not in _visited:
-            if path_exists(con.node2, end, _visited | {start}):
+            if path_exists(con.node2, end, _visited=_visited | {start}):
                 return True
     return False
 
@@ -316,7 +319,7 @@ def shortest_path_through_network(start, network, _visited=None):
     for con in start.connections:
         if con.node2 not in _visited:
             path = shortest_path_through_network(
-                con.node2, Network(reduced_set), _visited | {start})
+                con.node2, Network(reduced_set), _visited=_visited | {start})
             if path:
                 paths.append(path + Path([con]))
 
@@ -435,3 +438,24 @@ def generate_network(n_nodes=10, lower_bound=1, upper_bound=11,
                         connected = False
 
     return Network(done)
+
+
+def fully_connected(network_or_iterable):
+    '''Check if `network_or_iterable` is a fully connected network of
+    nodes.
+
+    Arguments:
+    --
+    - `network_or_iterable`: `Network` or other iterable collection of
+    `Node` objects (type `Network` or iterable).
+
+    Return:
+    --
+    `True` if `network_or_iterable` is fully connected, otherwise
+    `False`.
+    '''
+    for node in network_or_iterable:
+        for other_node in network_or_iterable:
+            if not path_exists(node, other_node):
+                return False
+    return True
