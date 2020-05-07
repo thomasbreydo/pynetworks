@@ -205,15 +205,14 @@ A `Network` of `n_nodes` interconnected `Node` objects.
 
 ### fully_connected
 
-Check if `network_or_iterable` is a fully connected network of
+Check if `network` is a fully connected network of
 nodes.
 
 #### Arguments:
 
-- `network_or_iterable`: `Network` or other iterable collection of
-  `Node` objects (type `Network` or iterable).
+- `network`: `Network` of `Node objects` (type `Network`).
 
 #### Return:
 
-`True` if `network_or_iterable` is fully connected, otherwise
+`True` if `network` is fully connected, otherwise
 `False`.

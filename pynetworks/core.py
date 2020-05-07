@@ -426,36 +426,33 @@ def generate_network(n_nodes=10, lower_bound=1, upper_bound=11,
                 cur_node.connect(other_node, random.randint(
                     lower_bound, upper_bound - 1))
     if force_connected:  # if network must be a connected network
-        connected = False
-        while not connected:
-            connected = True
-            for node in done:
-                for other_node in done - {node}:
-                    if not path_exists(node, other_node):
-                        node.connect(other_node, random.randint(
-                            lower_bound, upper_bound - 1))
-                        path_exists.clear_cache()
-                        connected = False
+        node_a = random.sample(done, 1)[0]
+        others = done - {node_a}
+        for node in others:
+            if not path_exists(node_a, node):
+                node.connect(node_a, random.randint(
+                    lower_bound, upper_bound - 1))
+                path_exists.clear_cache()
 
     return Network(done)
 
 
-def fully_connected(network_or_iterable):
-    '''Check if `network_or_iterable` is a fully connected network of
+def fully_connected(network):
+    '''Check if `network` is a fully connected network of
     nodes.
 
     Arguments:
     --
-    - `network_or_iterable`: `Network` or other iterable collection of
-    `Node` objects (type `Network` or iterable).
+    - `network`: `Network` of `Node objects` (type `Network`).
 
     Return:
     --
-    `True` if `network_or_iterable` is fully connected, otherwise
+    `True` if `network` is fully connected, otherwise
     `False`.
     '''
-    for node in network_or_iterable:
-        for other_node in network_or_iterable:
-            if not path_exists(node, other_node):
-                return False
+    node_a = random.sample(network, 1)[0]
+    others = network - {node_a}
+    for node in others:
+        if not path_exists(node_a, node):
+            return False
     return True
