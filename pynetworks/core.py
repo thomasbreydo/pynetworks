@@ -6,22 +6,14 @@ import functools
 class Node:
     '''Contain a named node, with weighted connections.
 
-    Attributes:
-    --
-    - `self.name`: name of this `Node` (type `str`).
-    - `self.connections`: list of connected `Node` objects (inital
-    value `[]`).
+    Parameters
+    ----------
+    name : str
+        name of this :class:`Node`.
 
-    Methods:
-    --
-    - `self.connect(other, weight)`: add `Connection` between `self`
-    and `other` with `weight`.
-    - `self.disconnect(other, weight)`: remove `Connection` between
-    `self` and `other` with `weight`.
-    - `self.isolate()`: disconnect from all connected `Node` objects.
 
-    Example:
-    --
+    Example
+    -------
     >>> a = Node('A')
     >>> b = Node('B')
     >>> a.connect(b, 3)
@@ -29,6 +21,12 @@ class Node:
     graph {
         "A" -- "B" [label=3]
     }
+
+    Attributes
+    ---------
+    name
+    connections : list
+        list of connected :class:`Node` objects.
     '''
 
     def __init__(self, name):
@@ -47,41 +45,52 @@ class Node:
         return id(self) == id(other)
 
     def connect(self, other, weight=None):
-        '''Add `Connection` between `self` and `other` with
-        `weight`.
+        '''Add :class:`Connection` between ``self`` and ``other`` with
+        ``weight``.
+
+        Parameters
+        ----------
+        other : ``Node`
+        weight : :obj:`int`, optional
         '''
         self.connections.append(Connection(self, other, weight))
         other.connections.append(Connection(other, self, weight))
 
     def disconnect(self, other, weight=None):
-        '''Remove `Connection` between `self` and `other` with
-        `weight`.
+        '''Remove :class:`Connection` between ``self`` and ``other`` with
+        ``weight``;
+
+        Parameters
+        ----------
+        other : ``Node`
+        weight : :obj:`int`, optional
         '''
         self.connections.remove(Connection(self, other, weight))
         other.connections.remove(Connection(other, self, weight))
 
     def isolate(self):
-        '''Disconnect from all connected `Node` objects.'''
+        '''Disconnect from all connected :class:`Node` objects.'''
         self.connections = []
 
 
 class Connection:
-    '''Represent an optionally weighted connection between two `Node`
+    '''Represent an optionally weighted connection between two :class:`Node`
     objects.
 
-    Attributes:
-    --
-    - `self.node1`: first `Node` in this `Connection`.
-    - `self.node2`: second `Node` in this `Connection`.
-    - `weight`: weight of this `Connection` (usually numerical, default
-    `None`).
+    Parameters
+    ----------
+    node1 : :class:`Node`
+        first :class:`Node` in this :class:`Connection`.
+    node2 : :class:`Node`
+        second :class:`Node` in this :class:`Connection`.
+    weight : :obj:`int` or :obj:`float`, optional
+        weight of this :class:`Connection`
 
-    Methods:
-    --
-    - `self.reverse()`: return a `Connection` with the same `node1`,
-    `node2`, and `weight`, BUT `node1` and `node2` swap.
-    - `self.dot()`: return DOT language representation of this
-    `Connection` object.
+    Attributes
+    ----------
+    node1
+    node2
+    weight
     '''
 
     def __init__(self, node1, node2, weight=None):
@@ -105,16 +114,23 @@ class Connection:
                                                          other.weight)
 
     def reverse(self):
-        '''Return:
-        --
-        A `Connection` with the same `node1`, `node2`, and `weight`,
-        BUT `node1` and `node2` swap.'''
+        '''
+        Returns
+        -------
+        :class:`Connection`
+            A :class:`Connection` with the same ``node1``, ``node2``,
+            and ``weight`` but with ``node1`` and ``node2`` swapped.
+        '''
         return Connection(self.node2, self.node1, self.weight)
 
     def dot(self):
-        '''Return:
-        --
-        A DOT language representation of this `Connection` object.'''
+        '''
+        Returns
+        -------
+        :obj:`str`
+            A DOT language representation of this :class:`Connection`
+            object.
+        '''
         unlabeled = (f'{escape_dot_id(self.node1.name)} -- '
                      f'{escape_dot_id(self.node2.name)}')
         if self.weight:
@@ -123,20 +139,20 @@ class Connection:
 
 
 class Network:
-    '''Contain a network of interconnected `Node` objects.
+    '''Contain a network of interconnected :class:`Node` objects.
 
-    Attributes:
-    --
-    - `self.all_nodes`: `set` of all nodes in this network (default
-    `set()`).
-    - `self.name`: `name` of this network (type `str`, default `''`).
-    - `self.isolated_nodes`: `set` of all nodes with no connections.
-    - `self.connections`: `list` of all connections in this `Network`.
+    Parameters
+    ----------
+    all_nodes : :obj:`set`
+        A set of all nodes in this network.
+    name``: ``name`` of this network (type :obj:`str`, default ``''``).
+    - ``self.isolated_nodes``: :obj:`set` of all nodes with no connections.
+    - ``self.connections``: :obj:`list` of all connections in this :class:`Network`.
 
     Methods:
     --
-    - `self.update()`: update `self.connections` and
-    `self.isolated_nodes`; run when `Node` objects in this network have
+    - ``self.update()``: update ``self.connections`` and
+    ``self.isolated_nodes``; run when :class:`Node` objects in this network have
     changed.
     '''
 
@@ -152,8 +168,8 @@ class Network:
         yield from self.all_nodes
 
     def update(self):
-        '''Update `self.connections` and `self.isolated_nodes`; run
-        when `Node` objects in this network have changed.
+        '''Update ``self.connections`` and ``self.isolated_nodes``; run
+        when :class:`Node` objects in this network have changed.
         '''
         self.isolated_nodes = set()
         self.connections = []
@@ -172,19 +188,19 @@ class Network:
 
 
 class Path:
-    '''Store `Connection` objects connecting two `Node` objects.
+    '''Store :class:`Connection` objects connecting two :class:`Node` objects.
 
-    Attributes:
+    Parameters
     --
-    - `self.connections`: `list` of all `Connection` objects in this
-    `Path`.
-    - `self.weight`: sum of the weights of all `Connection` objects in
-    this `Path` (usually numerical).
+    - ``self.connections``: :obj:`list` of all :class:`Connection` objects in this
+    :class:`Path`.
+    - ``self.weight``: sum of the weights of all :class:`Connection` objects in
+    this :class:`Path` (usually numerical).
 
     Methods:
     --
-    - `self.__add__(other)`: return a combined `Path` of `self` and
-    `other`.
+    - ``self.__add__(other)``: return a combined :class:`Path` of ``self`` and
+    ``other``.
     '''
 
     def __init__(self, connections=None):
@@ -196,7 +212,7 @@ class Path:
     def __add__(self, other):
         '''Return:
         --
-        - A combined `Path` of `self` and `other`.
+        - A combined :class:`Path` of ``self`` and ``other``.
         '''
         return Path(self.connections + other.connections)
 
@@ -205,8 +221,9 @@ class Path:
 
     @property
     def weight(self):
-        '''Property attribute: sum of the weights of all of the
-        `Connection` objects in this `Path` (type `int`).
+        '''
+        sum of the weights of all of the :class:`Connection`
+        objects in this :class:`Path`.
         '''
         return sum(con.weight for con in self.connections)
 
@@ -235,17 +252,17 @@ def memoize(shortest_path_func):
 
 @memoize
 def shortest_path(start, end, _visited=None):
-    '''Find the shortest path between `start` and `end`.
+    '''Find the shortest path between ``start`` and ``end``.
 
     Arguments:
     --
-    - `start`: starting `Node` object (type `Node`).
-    - `end`: final `Node` object (type `Node`).
+    - ``start``: starting :class:`Node` object (type :class:`Node`).
+    - ``end``: final :class:`Node` object (type :class:`Node`).
 
     Return:
     --
-    If a path exists from `start` to `end`, return that `Path` object.
-    Otherwise, return `None`.
+    If a path exists from ``start`` to ``end``, return that :class:`Path` object.
+    Otherwise, return ``None``.
     '''
     if start == end:
         return Path()
@@ -267,16 +284,16 @@ def shortest_path(start, end, _visited=None):
 
 @memoize
 def path_exists(start, end, _visited=None):
-    '''Check if a path exists between `start` and `end`.
+    '''Check if a path exists between ``start`` and ``end``.
 
     Arguments:
     --
-    - `start`: starting `Node` object (type `Node`).
-    - `end`: final `Node` object (type `Node`).
+    - ``start``: starting :class:`Node` object (type :class:`Node`).
+    - ``end``: final :class:`Node` object (type :class:`Node`).
 
     Return:
     --
-    `True` if a path exists, otherwise `False`.
+    ``True`` if a path exists, otherwise ``False``.
     '''
 
     if start == end:
@@ -293,19 +310,19 @@ def path_exists(start, end, _visited=None):
 
 @memoize
 def shortest_path_through_network(start, network, _visited=None):
-    '''Find the shortest path from `start` through all `Node` objects
-    in `network`.
+    '''Find the shortest path from ``start`` through all :class:`Node` objects
+    in ``network``.
 
     Arguments:
     --
-    - `start`: first `Node` in the returned `Path` (type `Node`).
-    - `network`: `Network` of `Node` objects containing `start` (type
-    `Network`).
+    - ``start``: first :class:`Node` in the returned :class:`Path` (type :class:`Node`).
+    - ``network``: :class:`Network` of :class:`Node` objects containing ``start`` (type
+    :class:`Network`).
 
     Return:
     --
-    If a path exists from `start` to `end`, return that `Path` object.
-    Otherwise, return `None`.
+    If a path exists from ``start`` to ``end``, return that :class:`Path` object.
+    Otherwise, return ``None``.
     '''
     reduced_set = network.all_nodes - {start}
     if not reduced_set:
@@ -332,11 +349,11 @@ def escape_dot_id(string):
 
     Arguments:
     --
-    - `string`: the id to escape (type `str`).
+    - ``string``: the id to escape (type :obj:`str`).
 
     Return:
     --
-    A valid, escaped id for a DOT graph (type `str`).
+    A valid, escaped id for a DOT graph (type :obj:`str`).
 
     Example:
     --
@@ -352,26 +369,26 @@ def dotgraph(isolated_nodes=None, connections=None, name=''):
 
     Arguments:
     --
-    - `isolated_nodes`: list of `Node` objects with no connections to
-    graph (type `list`, default `[]`).
-    - `connections`: list of `Connection` objects to graph (type `list`,
-    default `[]`).
-    - `name`: name of returned dotgraph (type `str`, default `''`).
+    - ``isolated_nodes``: list of :class:`Node` objects with no connections to
+    graph (type :obj:`list`, default ``[]``).
+    - ``connections``: list of :class:`Connection` objects to graph (type :obj:`list`,
+    default ``[]``).
+    - ``name``: name of returned dotgraph (type :obj:`str`, default ``''``).
 
     Return:
     --
-    A valid DOT graph (`str`).
+    A valid DOT graph (:obj:`str`).
 
     Examples:
     --
-    # One isolated `Node` object.
+    # One isolated :class:`Node` object.
     >>> a = Node('A')
     >>> print(dotgraph(isolated_nodes=[a], name='My Graph'))
     graph "My Graph" {
         "A"
     }
 
-    # Two connected `Node` objects.
+    # Two connected :class:`Node` objects.
     >>> b = Node('B')
     >>> c = Node('C')
     >>> b.connect(c, 5)
@@ -394,24 +411,24 @@ def dotgraph(isolated_nodes=None, connections=None, name=''):
 
 def generate_network(n_nodes=10, lower_bound=1, upper_bound=11,
                      connection_prob=0.8, force_connected=True):
-    '''Create a `Network` of  `Node` objects.
+    '''Create a :class:`Network` of  :class:`Node` objects.
 
     Arguments:
     --
-    - `n_nodes`: number of nodes (type `int`, default `10`).
-    - `lower_bound`:  lower bound (inclusive) of range of connections'
-    weights (type `int`, default `1`).
-    - `upper_bound`: upper bound (exclusive) for range of connections'
-    weights (type `int`, default `11`).
-    - `connections_prob`: probability betweeen 0 and 1 of any two nodes
-    being connected (type `float`, default `0.8`). If `force_connected`
-    is set to `True`, this setting might be overridden.
-    - `force_connected`: if `False`, output can be a disconnected
-    network (type `bool`, default `True`).
+    - ``n_nodes``: number of nodes (type :obj:`int`, default ``10``).
+    - ``lower_bound``:  lower bound (inclusive) of range of connections'
+    weights (type :obj:`int`, default ``1``).
+    - ``upper_bound``: upper bound (exclusive) for range of connections'
+    weights (type :obj:`int`, default ``11``).
+    - ``connections_prob``: probability betweeen 0 and 1 of any two nodes
+    being connected (type :obj:`float`, default ``0.8``). If ``force_connected``
+    is set to ``True``, this setting might be overridden.
+    - ``force_connected``: if ``False``, output can be a disconnected
+    network (type ``bool``, default ``True``).
 
     Return:
     --
-    A `Network` of `n_nodes` interconnected `Node` objects.
+    A :class:`Network` of ``n_nodes`` interconnected :class:`Node` objects.
     '''
 
     nodes = {Node(f'Node {i}') for i in range(int(n_nodes))}
@@ -436,17 +453,17 @@ def generate_network(n_nodes=10, lower_bound=1, upper_bound=11,
 
 
 def fully_connected(network):
-    '''Check if `network` is a fully connected network of
+    '''Check if ``network`` is a fully connected network of
     nodes.
 
     Arguments:
     --
-    - `network`: `Network` of `Node objects` (type `Network`).
+    - ``network``: :class:`Network` of ``Node objects`` (type :class:`Network`).
 
     Return:
     --
-    `True` if `network` is fully connected, otherwise
-    `False`.
+    ``True`` if ``network`` is fully connected, otherwise
+    ``False``.
     '''
     node_a = random.sample(network, 1)[0]
     others = network - {node_a}
