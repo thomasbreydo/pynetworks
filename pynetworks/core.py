@@ -1,5 +1,6 @@
 import random
 import re
+import functools
 
 
 class Node:
@@ -216,6 +217,7 @@ def memoize(shortest_path_func):
     '''
     memo = {}
 
+    @functools.wraps(shortest_path_func)
     def memoized_shortest_path_func(*args, _visited=None):
         # doesn't affect memo, also it's unhashable
         key = tuple(args)
@@ -230,7 +232,7 @@ def memoize(shortest_path_func):
         memo = {}
 
     memoized_shortest_path_func.clear_cache = clear_cache
-    memoized_shortest_path_func.__doc__ = shortest_path_func.__doc__
+    memoized_shortest_path_func.cache = memo
 
     return memoized_shortest_path_func
 
