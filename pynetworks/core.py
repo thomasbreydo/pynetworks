@@ -8,7 +8,7 @@ class Node:
 
     Parameters
     ----------
-    name : str
+    name
         name of this :class:`Node`.
 
 
@@ -50,20 +50,20 @@ class Node:
 
         Parameters
         ----------
-        other : ``Node`
-        weight : :obj:`int`, optional
+        other : :class:`Node`
+        weight : numerical, optional
         '''
         self.connections.append(Connection(self, other, weight))
         other.connections.append(Connection(other, self, weight))
 
     def disconnect(self, other, weight=None):
-        '''Remove :class:`Connection` between ``self`` and ``other`` with
-        ``weight``;
+        '''Remove :class:`Connection` between ``self`` and ``other``
+        with ``weight``.
 
         Parameters
         ----------
-        other : ``Node`
-        weight : :obj:`int`, optional
+        other : :class:`Node`
+        weight : numerical, optional
         '''
         self.connections.remove(Connection(self, other, weight))
         other.connections.remove(Connection(other, self, weight))
@@ -74,8 +74,8 @@ class Node:
 
 
 class Connection:
-    '''Represent an optionally weighted connection between two :class:`Node`
-    objects.
+    '''Represent an optionally weighted connection between two
+    :class:`Node` objects.
 
     Parameters
     ----------
@@ -83,8 +83,8 @@ class Connection:
         first :class:`Node` in this :class:`Connection`.
     node2 : :class:`Node`
         second :class:`Node` in this :class:`Connection`.
-    weight : :obj:`int` or :obj:`float`, optional
-        weight of this :class:`Connection`
+    weight : numerical, optional
+        weight of this :class:`Connection`.
 
     Attributes
     ----------
@@ -127,7 +127,7 @@ class Connection:
         '''
         Returns
         -------
-        :obj:`str`
+        str
             A DOT language representation of this :class:`Connection`
             object.
         '''
@@ -143,17 +143,20 @@ class Network:
 
     Parameters
     ----------
-    all_nodes : :obj:`set`
-        A set of all nodes in this network.
-    name``: ``name`` of this network (type :obj:`str`, default ``''``).
-    - ``self.isolated_nodes``: :obj:`set` of all nodes with no connections.
-    - ``self.connections``: :obj:`list` of all connections in this :class:`Network`.
+    all_nodes : iterable, optional
+        All nodes in this network. If left out, the network is
+        initialized empty.
+    name: optional
+        The name of this network.
 
-    Methods:
-    --
-    - ``self.update()``: update ``self.connections`` and
-    ``self.isolated_nodes``; run when :class:`Node` objects in this network have
-    changed.
+    Attributes
+    ----------
+    all_nodes
+    name
+    connections : list
+        All connections in this :class:`Network`.
+    isolated_nodes : set
+        All nodes with no connections.
     '''
 
     def __init__(self, all_nodes=None, name=None):
@@ -168,7 +171,7 @@ class Network:
         yield from self.all_nodes
 
     def update(self):
-        '''Update ``self.connections`` and ``self.isolated_nodes``; run
+        '''Update ``connections`` and ``isolated_nodes``, to be used
         when :class:`Node` objects in this network have changed.
         '''
         self.isolated_nodes = set()
@@ -188,19 +191,18 @@ class Network:
 
 
 class Path:
-    '''Store :class:`Connection` objects connecting two :class:`Node` objects.
+    '''Store :class:`Connection` objects connecting two :class:`Node`
+    objects.
 
     Parameters
-    --
-    - ``self.connections``: :obj:`list` of all :class:`Connection` objects in this
-    :class:`Path`.
-    - ``self.weight``: sum of the weights of all :class:`Connection` objects in
-    this :class:`Path` (usually numerical).
+    ----------
+    connections : iterable, optional
+        All :class:`Connection` objects in this :class:`Path`. If left
+        out, the path is initialized empty.
 
-    Methods:
-    --
-    - ``self.__add__(other)``: return a combined :class:`Path` of ``self`` and
-    ``other``.
+    Attributes
+    ----------
+    connections
     '''
 
     def __init__(self, connections=None):
@@ -210,10 +212,6 @@ class Path:
         return dotgraph(connections=self.connections)
 
     def __add__(self, other):
-        '''Return:
-        --
-        - A combined :class:`Path` of ``self`` and ``other``.
-        '''
         return Path(self.connections + other.connections)
 
     def __lt__(self, other):
@@ -221,16 +219,20 @@ class Path:
 
     @property
     def weight(self):
-        '''
-        sum of the weights of all of the :class:`Connection`
+        '''Sum of the weights of all of the :class:`Connection`
         objects in this :class:`Path`.
+
+        :type: numerical
         '''
         return sum(con.weight for con in self.connections)
 
 
 def memoize(shortest_path_func):
-    '''Memoize the path-finding functions: `shortest_path`,
-    `shortest_path_through_network`, `path_exists`.
+    '''Memoize the path-finding function that can take \\*args and
+    _visited.
+
+    Used by :func:`shortest_path`,
+    :func:`shortest_path_through_network`, and :func:`path_exists`.
     '''
     memo = {}
 
@@ -254,15 +256,16 @@ def memoize(shortest_path_func):
 def shortest_path(start, end, _visited=None):
     '''Find the shortest path between ``start`` and ``end``.
 
-    Arguments:
-    --
-    - ``start``: starting :class:`Node` object (type :class:`Node`).
-    - ``end``: final :class:`Node` object (type :class:`Node`).
+    Parameters
+    ----------
+    start : :class:`Node`
+    end : :class:`Node`
 
-    Return:
-    --
-    If a path exists from ``start`` to ``end``, return that :class:`Path` object.
-    Otherwise, return ``None``.
+    Returns
+    -------
+    :class:`Path` ``None``
+        If a path exists from ``start`` to ``end``, return that
+        :class:`Path` object. Otherwise, return ``None``.
     '''
     if start == end:
         return Path()
@@ -283,46 +286,23 @@ def shortest_path(start, end, _visited=None):
 
 
 @memoize
-def path_exists(start, end, _visited=None):
-    '''Check if a path exists between ``start`` and ``end``.
-
-    Arguments:
-    --
-    - ``start``: starting :class:`Node` object (type :class:`Node`).
-    - ``end``: final :class:`Node` object (type :class:`Node`).
-
-    Return:
-    --
-    ``True`` if a path exists, otherwise ``False``.
-    '''
-
-    if start == end:
-        return True
-    if _visited is None:
-        _visited = set()
-
-    for con in start.connections:
-        if con.node2 not in _visited:
-            if path_exists(con.node2, end, _visited=_visited | {start}):
-                return True
-    return False
-
-
-@memoize
 def shortest_path_through_network(start, network, _visited=None):
-    '''Find the shortest path from ``start`` through all :class:`Node` objects
-    in ``network``.
+    '''Find the shortest path from ``start`` through all other
+    :class:`Node` objects in ``network``.
 
-    Arguments:
-    --
-    - ``start``: first :class:`Node` in the returned :class:`Path` (type :class:`Node`).
-    - ``network``: :class:`Network` of :class:`Node` objects containing ``start`` (type
-    :class:`Network`).
+    Parameters
+    ----------
+    start : :class:`Node`
+        Start of the returned :class:`Path`.
+    network : :class:`Network`
+        Fully-connected network through which the returned
+        :class:`Path` travels.
 
-    Return:
-    --
-    If a path exists from ``start`` to ``end``, return that :class:`Path` object.
-    Otherwise, return ``None``.
+    Returns
+    -------
+    :class:`Path` ``None``
+        If a path exists from ``start`` to ``end``, return that
+        :class:`Path` object. Otherwise, return ``None``.
     '''
     reduced_set = network.all_nodes - {start}
     if not reduced_set:
@@ -341,22 +321,51 @@ def shortest_path_through_network(start, network, _visited=None):
     try:
         return min(paths)
     except ValueError:
-        return
+        return None
+
+
+@memoize
+def path_exists(start, end, _visited=None):
+    '''Check if a path exists between ``start`` and ``end``.
+
+    Parameters
+    ----------
+    start : :class:`Node`
+    end : :class:`Node`
+
+    Returns
+    -------
+    bool
+        ``True`` if a path exists, otherwise ``False``.
+    '''
+
+    if start == end:
+        return True
+    if _visited is None:
+        _visited = set()
+
+    for con in start.connections:
+        if con.node2 not in _visited:
+            if path_exists(con.node2, end, _visited=_visited | {start}):
+                return True
+    return False
 
 
 def escape_dot_id(string):
     '''Surround in double quotes and escape all double quotes.
 
-    Arguments:
-    --
-    - ``string``: the id to escape (type :obj:`str`).
+    Parameters
+    ----------
+    string : str
+        ID to escape.
 
-    Return:
-    --
-    A valid, escaped id for a DOT graph (type :obj:`str`).
+    Returns
+    -------
+    str
+        A valid, escaped ID for a DOT graph.
 
-    Example:
-    --
+    Example
+    -------
     >>> escape_dot_id('A"B')
     '"A\\"B"'
     '''
@@ -367,28 +376,33 @@ def escape_dot_id(string):
 def dotgraph(isolated_nodes=None, connections=None, name=''):
     '''Generate a DOT graph out of nodes and connections.
 
-    Arguments:
-    --
-    - ``isolated_nodes``: list of :class:`Node` objects with no connections to
-    graph (type :obj:`list`, default ``[]``).
-    - ``connections``: list of :class:`Connection` objects to graph (type :obj:`list`,
-    default ``[]``).
-    - ``name``: name of returned dotgraph (type :obj:`str`, default ``''``).
+    Parameters
+    ----------
+    isolated_nodes : list of :class:`Node`, optional
+        Isolated nodes to graph.
+    connections : list of :class:`Connection`, optional
+        Connections to graph.
+    name : optional
+        Name of the returned dotgraph.
 
-    Return:
-    --
-    A valid DOT graph (:obj:`str`).
+    Returns
+    -------
+    str
+        A valid DOT graph of all the given nodes and connections with
+        name ``name``.
 
-    Examples:
-    --
-    # One isolated :class:`Node` object.
+    Examples
+    --------
+    Graphing one isolated :class:`Node` object.
+
     >>> a = Node('A')
     >>> print(dotgraph(isolated_nodes=[a], name='My Graph'))
     graph "My Graph" {
         "A"
     }
 
-    # Two connected :class:`Node` objects.
+    Graphing connected :class:`Node` objects.
+
     >>> b = Node('B')
     >>> c = Node('C')
     >>> b.connect(c, 5)
@@ -413,22 +427,26 @@ def generate_network(n_nodes=10, lower_bound=1, upper_bound=11,
                      connection_prob=0.8, force_connected=True):
     '''Create a :class:`Network` of  :class:`Node` objects.
 
-    Arguments:
-    --
-    - ``n_nodes``: number of nodes (type :obj:`int`, default ``10``).
-    - ``lower_bound``:  lower bound (inclusive) of range of connections'
-    weights (type :obj:`int`, default ``1``).
-    - ``upper_bound``: upper bound (exclusive) for range of connections'
-    weights (type :obj:`int`, default ``11``).
-    - ``connections_prob``: probability betweeen 0 and 1 of any two nodes
-    being connected (type :obj:`float`, default ``0.8``). If ``force_connected``
-    is set to ``True``, this setting might be overridden.
-    - ``force_connected``: if ``False``, output can be a disconnected
-    network (type ``bool``, default ``True``).
+    Parameters
+    ----------
+    n_nodes : int, optional
+        Number of nodes in the returned network.
+    lower_bound : int, optional
+        Lower bound (inclusive) of range of connections' weights.
+    upper_bound : int, optional
+        Upper bound (exclusive) for range of connections' weights.
+    connections_prob : float, optional
+        Probability betweeen 0 and 1 of any two nodes being connected.
+        If ``force_connected`` is set to ``True``, ``connections_prob``
+        may be overridden to ensure a fully-connected network.
+    force_connected : bool
+        If ``False``, output does not need to be a full-connected
+        network.
 
-    Return:
-    --
-    A :class:`Network` of ``n_nodes`` interconnected :class:`Node` objects.
+    Returns
+    -------
+    :class:`Network`
+        A network ``n_nodes`` interconnected :class:`Node` objects.
     '''
 
     nodes = {Node(f'Node {i}') for i in range(int(n_nodes))}
@@ -456,14 +474,15 @@ def fully_connected(network):
     '''Check if ``network`` is a fully connected network of
     nodes.
 
-    Arguments:
-    --
-    - ``network``: :class:`Network` of ``Node objects`` (type :class:`Network`).
+    Parameters
+    ----------
+    network : :class:`Network`
 
-    Return:
-    --
-    ``True`` if ``network`` is fully connected, otherwise
-    ``False``.
+    Returns
+    -------
+    bool
+        ``True`` if ``network`` is fully connected, otherwise
+        ``False``.
     '''
     node_a = random.sample(network, 1)[0]
     others = network - {node_a}
