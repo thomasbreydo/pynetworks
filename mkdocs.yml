@@ -1,5 +1,0 @@
-site_name: PyNetworks
-theme: readthedocs
-nav:
-  - Quick Start: README.md
-  - Documentation: documentation.md
