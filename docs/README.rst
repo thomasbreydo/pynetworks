@@ -21,7 +21,7 @@ Documentation
 -------------
 
 Read the full documentation for **pynetworks**
-`here <https://pynetworks.readthedocs.io/documentation.html>`_.
+`here <https://pynetworks.readthedocs.io/en/latest/documentation.html>`_.
 
 Example Usage
 -------------
