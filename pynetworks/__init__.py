@@ -7,4 +7,4 @@ using the DOT language for representation.
 
 from .core import *
 
-__version__ = "0.4.12"
+__version__ = "0.4.13"
