@@ -89,4 +89,4 @@ Printing ``net`` gives:
 License
 -------
 
-`GNU </LICENSE>`_.
+`GNU <https://github.com/thomasbreydo/pynetworks/blob/master/LICENSE>`_.
