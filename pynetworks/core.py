@@ -212,8 +212,8 @@ class Path:
 
 
 def memoize(shortest_path_func):
-    '''Memoize the path-finding functions: `shortest_path()`,
-    `path_exists`.
+    '''Memoize the path-finding functions: `shortest_path`,
+    `shortest_path_through_network`, `path_exists`.
     '''
     memo = {}
 
@@ -227,11 +227,7 @@ def memoize(shortest_path_func):
             memo[key] = shortest_path_func(*args, _visited)
         return memo[key]
 
-    def clear_cache():
-        nonlocal memo  # uses memo from enclosing scope
-        memo = {}
-
-    memoized_shortest_path_func.clear_cache = clear_cache
+    memoized_shortest_path_func.clear_cache = memo.clear
     memoized_shortest_path_func.cache = memo
 
     return memoized_shortest_path_func
