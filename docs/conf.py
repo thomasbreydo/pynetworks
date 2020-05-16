@@ -23,7 +23,7 @@ copyright = '2020, Thomas Breydo'
 author = 'Thomas Breydo'
 
 # The full version, including alpha/beta/rc tags
-release = '0.4.10'
+release = '0.4.14'
 
 
 # -- General configuration ---------------------------------------------------
