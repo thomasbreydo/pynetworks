@@ -1,6 +1,6 @@
 pynetworks
 ----------
 
-.. automodule:: pynetworks.core
+.. automodule:: pynetworks
     :members:
     :inherited-members:
