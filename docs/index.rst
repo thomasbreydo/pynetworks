@@ -1,18 +1,15 @@
 pynetworks
-======================================
-
-.. include:: README.rst
+==========
+Welcome to **pynetworks**'s documentation!
 
 .. toctree::
     :caption: Quick Start
     :maxdepth: 2
-    :hidden:
 
     README
 
 .. toctree::
     :caption: Full Documentation
     :maxdepth: 2
-    :hidden:
 
     documentation

@@ -9,23 +9,23 @@ class Path:
 
     Parameters
     ----------
-    connections : iterable, optional
+    edges : iterable, optional
         All :class:`Edge` objects in this :class:`Path`. If left
         out, the path is initialized empty.
 
     Attributes
     ----------
-    connections
+    edges
     '''
 
-    def __init__(self, connections=None):
-        self.connections = list(connections) if connections else []
+    def __init__(self, edges=None):
+        self.edges = list(edges) if edges else []
 
     def __str__(self):
-        return dotgraph(connections=self.connections)
+        return dotgraph(edges=self.edges)
 
     def __add__(self, other):
-        return Path(self.connections + other.connections)
+        return Path(self.edges + other.edges)
 
     def __lt__(self, other):
         return self.weight < other.weight
@@ -37,11 +37,11 @@ class Path:
 
         :type: numerical
         '''
-        return sum(con.weight for con in self.connections)
+        return sum(con.weight for con in self.edges)
 
 
 def memoize(shortest_path_func):
-    '''Memoize the path-finding function that can take \\*args and
+    '''Memoize a path-finding function that can take \\*args and
     _visited.
 
     Used by :func:`shortest_path`,
@@ -86,7 +86,7 @@ def shortest_path(start, end, _visited=None):
         _visited = set()
 
     paths = []
-    for con in start.connections:
+    for con in start.edges:
         if con.node2 not in _visited:
             path = shortest_path(con.node2, end, _visited=_visited | {start})
             if path:
@@ -124,7 +124,7 @@ def shortest_path_through_network(start, network, _visited=None):
         _visited = set()
 
     paths = []
-    for con in start.connections:
+    for con in start.edges:
         if con.node2 not in _visited:
             path = shortest_path_through_network(
                 con.node2, networks.Network(reduced_set),
@@ -158,7 +158,7 @@ def path_exists(start, end, _visited=None):
     if _visited is None:
         _visited = set()
 
-    for con in start.connections:
+    for con in start.edges:
         if con.node2 not in _visited:
             if path_exists(con.node2, end, _visited=_visited | {start}):
                 return True

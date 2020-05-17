@@ -20,7 +20,7 @@ The source code for **pynetworks** is hosted on
 Documentation
 -------------
 
-Read the full documentation for **pynetworks**
+Read the latest documentation for **pynetworks**
 `here <https://pynetworks.readthedocs.io/en/latest/documentation.html>`_.
 
 Example Usage

@@ -1,13 +1,14 @@
 '''pynetworks
 ==========
 
-A Python package that provides structure for networks of interconnected nodes
-using the DOT language for representation.
+A Python package that provides structure for networks of interconnected
+nodes using the DOT language for representation.
 '''
 
 from .networks import Edge
 from .networks import Network
 from .networks import Node
+from .networks import fully_connected
 from .networks import generate_network
 from .dot import dotgraph
 from .dot import escape_dot_id
@@ -23,12 +24,13 @@ __version__ = "0.5.2"
 __all__ = ['Edge',
            'Network',
            'Node',
-           'Path',
+           'fully_connected',
+           'generate_network',
            'dotgraph',
            'escape_dot_id',
-           'generate_network',
+           'Path',
            'memoize',
            'path_exists',
            'shortest_path',
-           'shortest_path_through_network',
+           'shortest_path_through_network'
            ]
