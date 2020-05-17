@@ -30,8 +30,8 @@ def dotgraph(isolated_nodes=None, connections=None, name=''):
     ----------
     isolated_nodes : list of :class:`Node`, optional
         Isolated nodes to graph.
-    connections : list of :class:`Connection`, optional
-        Connections to graph.
+    connections : list of :class:`Edge`, optional
+        Edges to graph.
     name : optional
         Name of the returned dotgraph.
 

@@ -46,7 +46,7 @@ class Node:
         return id(self) == id(other)
 
     def connect(self, other, weight=None):
-        '''Add :class:`Connection` between ``self`` and ``other`` with
+        '''Add :class:`Edge` between ``self`` and ``other`` with
         ``weight``.
 
         Parameters
@@ -54,11 +54,11 @@ class Node:
         other : :class:`Node`
         weight : numerical, optional
         '''
-        self.connections.append(Connection(self, other, weight))
-        other.connections.append(Connection(other, self, weight))
+        self.connections.append(Edge(self, other, weight))
+        other.connections.append(Edge(other, self, weight))
 
     def disconnect(self, other, weight=None):
-        '''Remove :class:`Connection` between ``self`` and ``other``
+        '''Remove :class:`Edge` between ``self`` and ``other``
         with ``weight``.
 
         Parameters
@@ -66,26 +66,26 @@ class Node:
         other : :class:`Node`
         weight : numerical, optional
         '''
-        self.connections.remove(Connection(self, other, weight))
-        other.connections.remove(Connection(other, self, weight))
+        self.connections.remove(Edge(self, other, weight))
+        other.connections.remove(Edge(other, self, weight))
 
     def isolate(self):
         '''Disconnect from all connected :class:`Node` objects.'''
         self.connections = []
 
 
-class Connection:
+class Edge:
     '''Represent an optionally weighted connection between two
     :class:`Node` objects.
 
     Parameters
     ----------
     node1 : :class:`Node`
-        first :class:`Node` in this :class:`Connection`.
+        first :class:`Node` in this :class:`Edge`.
     node2 : :class:`Node`
-        second :class:`Node` in this :class:`Connection`.
+        second :class:`Node` in this :class:`Edge`.
     weight : numerical, optional
-        weight of this :class:`Connection`.
+        weight of this :class:`Edge`.
 
     Attributes
     ----------
@@ -118,18 +118,18 @@ class Connection:
         '''
         Returns
         -------
-        :class:`Connection`
-            A :class:`Connection` with the same ``node1``, ``node2``,
+        :class:`Edge`
+            A :class:`Edge` with the same ``node1``, ``node2``,
             and ``weight`` but with ``node1`` and ``node2`` swapped.
         '''
-        return Connection(self.node2, self.node1, self.weight)
+        return Edge(self.node2, self.node1, self.weight)
 
     def dot(self):
         '''
         Returns
         -------
         str
-            A DOT language representation of this :class:`Connection`
+            A DOT language representation of this :class:`Edge`
             object.
         '''
         unlabeled = (f'{escape_dot_id(self.node1.name)} -- '

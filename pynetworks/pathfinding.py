@@ -4,13 +4,13 @@ from . import networks
 
 
 class Path:
-    '''Store :class:`Connection` objects connecting two :class:`Node`
+    '''Store :class:`Edge` objects connecting two :class:`Node`
     objects.
 
     Parameters
     ----------
     connections : iterable, optional
-        All :class:`Connection` objects in this :class:`Path`. If left
+        All :class:`Edge` objects in this :class:`Path`. If left
         out, the path is initialized empty.
 
     Attributes
@@ -32,7 +32,7 @@ class Path:
 
     @property
     def weight(self):
-        '''Sum of the weights of all of the :class:`Connection`
+        '''Sum of the weights of all of the :class:`Edge`
         objects in this :class:`Path`.
 
         :type: numerical
