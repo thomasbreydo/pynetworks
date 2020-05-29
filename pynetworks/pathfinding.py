@@ -1,9 +1,9 @@
+import inspect
 import functools
 from .dot import dotgraph
-from . import networks
 
 
-class Path:
+class Path(list):
     '''Store :class:`Edge` objects connecting two :class:`Node`
     objects.
 
@@ -18,16 +18,20 @@ class Path:
     edges
     '''
 
-    def __init__(self, edges=None):
-        self.edges = list(edges) if edges else []
-
     def __str__(self):
-        return dotgraph(edges=self.edges)
+        return dotgraph(edges=self)
 
     def __add__(self, other):
-        return Path(self.edges + other.edges)
+        return Path(super().__add__(other))
+
+    def __repr__(self):
+        return object.__repr__(self)
 
     def __lt__(self, other):
+        if not isinstance(other, Path):
+            raise TypeError("'<' not supported between instances of"
+                            f'{type(self).__name__!r}  and '
+                            f'{type(other).__name__!r}')
         return self.weight < other.weight
 
     @property
@@ -37,42 +41,83 @@ class Path:
 
         :type: numerical
         '''
-        return sum(con.weight for con in self.edges)
+        return sum(edge.weight for edge in self)
 
 
 def memoize(shortest_path_func):
-    '''Memoize a path-finding function that can take \\*args and
-    _visited.
+    '''Cache a path-finding function that expects two input parameters.
 
-    Used by :func:`shortest_path`,
-    :func:`shortest_path_through_network`, and :func:`path_exists`.
+    The path-finding function may additionally accept some number of
+    private parameters that don't affect cache.
+
+    Examples
+    --------
+    Accessing cache.
+
+    >>> shortest_path.cache  # see note for supported functions
+    {...}
+
+
+    Clearing cache.
+
+    >>> shortest_path.cache_clear()  # see note for supported functions
+    >>> shortest_path.cache
+    {}
+
+    Note
+    ----
+    Supported path-finding functions:
+
+    - :meth:`shortest_path`
+    - :meth:`shortest_path_through_network`
+    - :meth:`path_exists`
     '''
     memo = {}
+    all_params = iter(inspect.signature(shortest_path_func).parameters)
+    param1_name = next(all_params)
+    param2_name = next(all_params)
 
     @functools.wraps(shortest_path_func)
-    def memoized_shortest_path_func(*args, _visited=None):
-        # doesn't affect memo, also it's unhashable
-        key = tuple(args)
+    def memoized_shortest_path_func(*args, **kwargs):
         try:
-            return memo[key]
+            param1 = args[0]
+        except IndexError:  # both cacheable params passed as kwargs
+            param1 = kwargs[param1_name]
+            param2 = kwargs[param2_name]
+        else:
+            try:
+                param2 = args[1]
+            except IndexError:  # second cacheable param passed as kwarg
+                param2 = kwargs[param2_name]
+
+        cachekey = tuple(frozenset(param) if isinstance(param, set)
+                         else param for param in [param1, param2])
+
+        try:
+            return memo[cachekey]
         except KeyError:
-            memo[key] = shortest_path_func(*args, _visited)
-        return memo[key]
+            memo[cachekey] = shortest_path_func(*args, **kwargs)
+        return memo[cachekey]
 
-    memoized_shortest_path_func.clear_cache = memo.clear
+    memoized_shortest_path_func.cache_clear = memo.clear
     memoized_shortest_path_func.cache = memo
-
+    # pylint: disable=no-member
+    memoized_shortest_path_func.__doc__ += '''
+    Note
+    ----
+    This function is cached by the :meth:`memoize` function.
+    '''
     return memoized_shortest_path_func
 
 
 @memoize
-def shortest_path(start, end, _visited=None):
+def shortest_path(start, end, _tail_weight=0, _visited=None, _best_path=None):
     '''Find the shortest path between ``start`` and ``end``.
 
     Parameters
     ----------
-    start : :class:`Node`
-    end : :class:`Node`
+    start: :class:`Node`
+    end: :class:`Node`
 
     Returns
     -------
@@ -80,26 +125,46 @@ def shortest_path(start, end, _visited=None):
         If a path exists from ``start`` to ``end``, return that
         :class:`Path` object. Otherwise, return ``None``.
     '''
-    if start == end:
+    if start is end:
         return Path()
     if _visited is None:
         _visited = set()
 
-    paths = []
-    for con in start.edges:
-        if con.node2 not in _visited:
-            path = shortest_path(con.node2, end, _visited=_visited | {start})
-            if path:
-                paths.append(path + Path([con]))
+    for edge in start.edges:
+        if edge.node2 not in _visited:
+            new_weight = edge.weight + _tail_weight
+            try:
+                keep_going = new_weight < _best_path.weight
+            except AttributeError:  # catches _best_path is None
+                # still no best --> we are forced to keep going
+                path = shortest_path(
+                    edge.node2, end,
+                    _tail_weight=new_weight,
+                    _visited=_visited | {start},
+                )
+                try:
+                    _best_path = Path([edge]) + path
+                except TypeError:  # no path found
+                    pass
+            else:
+                if keep_going:
+                    path = shortest_path(
+                        edge.node2, end,
+                        _tail_weight=new_weight,
+                        _visited=_visited | {start},
+                        _best_path=_best_path,
+                    )
+                    try:
+                        _best_path = Path([edge]) + path
+                    except TypeError:  # no path found
+                        pass
 
-    try:
-        return min(paths)
-    except ValueError:
-        return
+    return _best_path
 
 
 @memoize
-def shortest_path_through_network(start, network, _visited=None):
+def shortest_path_through_network(start, network, _tail_weight=0,
+                                  _visited=None, _best_path=None):
     '''Find the shortest path from ``start`` through all other
     :class:`Node` objects in ``network``.
 
@@ -117,25 +182,48 @@ def shortest_path_through_network(start, network, _visited=None):
         If a path exists from ``start`` to ``end``, return that
         :class:`Path` object. Otherwise, return ``None``.
     '''
-    reduced_set = network.all_nodes - {start}
+    try:
+        reduced_set = network.all_nodes - {start}
+    except AttributeError:  # network is set of Node, not Network
+        reduced_set = network - {start}
     if not reduced_set:
         return Path()
     if _visited is None:
         _visited = set()
 
-    paths = []
-    for con in start.edges:
-        if con.node2 not in _visited:
-            path = shortest_path_through_network(
-                con.node2, networks.Network(reduced_set),
-                _visited=_visited | {start})
-            if path:
-                paths.append(path + Path([con]))
+    new_best_path_found = False
+    for edge in start.edges:
+        if edge.node2 not in _visited:
+            new_weight = edge.weight + _tail_weight
+            try:
+                keep_going = new_weight < _best_path.weight
+            except AttributeError:  # catches _best_path is None
+                # still no best --> we are forced to keep going
+                path = shortest_path_through_network(
+                    edge.node2, reduced_set,
+                    _tail_weight=new_weight,
+                    _visited=_visited | {start},
+                )
+                try:
+                    _best_path = Path([edge]) + path
+                    new_best_path_found = True
+                except TypeError:  # no path found
+                    pass
+            else:
+                if keep_going:
+                    path = shortest_path_through_network(
+                        edge.node2, reduced_set,
+                        _tail_weight=new_weight,
+                        _visited=_visited | {start},
+                        _best_path=_best_path,
+                    )
+                    try:
+                        _best_path = Path([edge]) + path
+                        new_best_path_found = True
+                    except TypeError:  # no path found
+                        pass
 
-    try:
-        return min(paths)
-    except ValueError:
-        return None
+    return _best_path if new_best_path_found else None
 
 
 @memoize
@@ -158,8 +246,8 @@ def path_exists(start, end, _visited=None):
     if _visited is None:
         _visited = set()
 
-    for con in start.edges:
-        if con.node2 not in _visited:
-            if path_exists(con.node2, end, _visited=_visited | {start}):
+    for edge in start.edges:
+        if edge.node2 not in _visited:
+            if path_exists(edge.node2, end, _visited=_visited | {start}):
                 return True
     return False

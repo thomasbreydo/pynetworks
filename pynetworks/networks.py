@@ -169,8 +169,8 @@ class Network:
     '''
 
     def __init__(self, all_nodes=None, name=None):
-        self.all_nodes = set(all_nodes) if all_nodes else set()
-        self.name = str(name) if name else ''
+        self.all_nodes = set(all_nodes) if all_nodes is not None else set()
+        self.name = str(name) if name is not None else ''
         self.update()  # set self.isolated_nodes and self.edges
 
     def __str__(self):
@@ -190,7 +190,7 @@ class Network:
             if node.edges:
                 for con in node.edges:
                     if con.reverse() in seen:
-                        # just node2 of an already-stored edge -> ignore
+                        # just node2 of an already-stored edge --> ignore
                         continue
                     else:
                         self.edges.append(con)
@@ -263,6 +263,6 @@ def generate_network(n_nodes=10, lower_bound=1, upper_bound=11,
             if not path_exists(node_a, node):
                 node.connect(node_a, random.randint(
                     lower_bound, upper_bound - 1))
-                path_exists.clear_cache()
+                path_exists.cache_clear()
 
     return Network(done)
