@@ -44,6 +44,10 @@ class Path(list):
         return sum(edge.weight for edge in self)
 
 
+class _IncompleteSearch(Exception):
+    pass
+
+
 def memoize(shortest_path_func):
     '''Cache a path-finding function that expects two input parameters.
 
@@ -96,8 +100,13 @@ def memoize(shortest_path_func):
         try:
             return memo[cachekey]
         except KeyError:
-            memo[cachekey] = shortest_path_func(*args, **kwargs)
-        return memo[cachekey]
+            try:
+                path = shortest_path_func(*args, **kwargs)
+            except _IncompleteSearch:
+                return None  # but don't cache
+            else:
+                memo[cachekey] = path
+                return path
 
     memoized_shortest_path_func.cache_clear = memo.clear
     memoized_shortest_path_func.cache = memo
@@ -190,40 +199,39 @@ def shortest_path_through_network(start, network, _tail_weight=0,
         return Path()
     if _visited is None:
         _visited = set()
+    new_path_was_found = False
+    edges_were_skipped = False
 
-    new_best_path_found = False
     for edge in start.edges:
         if edge.node2 not in _visited:
             new_weight = edge.weight + _tail_weight
             try:
-                keep_going = new_weight < _best_path.weight
+                skip_this_edge = new_weight >= _best_path.weight
             except AttributeError:  # catches _best_path is None
-                # still no best --> we are forced to keep going
-                path = shortest_path_through_network(
-                    edge.node2, reduced_set,
-                    _tail_weight=new_weight,
-                    _visited=_visited | {start},
-                )
-                try:
-                    _best_path = Path([edge]) + path
-                    new_best_path_found = True
-                except TypeError:  # no path found
-                    pass
+                # still no best --> we MUST to keep going
+                pass
             else:
-                if keep_going:
-                    path = shortest_path_through_network(
-                        edge.node2, reduced_set,
-                        _tail_weight=new_weight,
-                        _visited=_visited | {start},
-                        _best_path=_best_path,
-                    )
-                    try:
-                        _best_path = Path([edge]) + path
-                        new_best_path_found = True
-                    except TypeError:  # no path found
-                        pass
+                if skip_this_edge:
+                    edges_were_skipped = True
+                    continue
+            path = shortest_path_through_network(
+                edge.node2, reduced_set,
+                _tail_weight=new_weight,
+                _visited=_visited | {start},
+                _best_path=_best_path,
+            )
+            try:
+                _best_path = Path([edge]) + path
+            except TypeError:  # no path found
+                pass
+            else:
+                new_path_was_found = True
 
-    return _best_path if new_best_path_found else None
+    if new_path_was_found:
+        return _best_path
+    if edges_were_skipped:
+        raise _IncompleteSearch('search was not exhaustive.')
+    return None
 
 
 @memoize
