@@ -120,7 +120,9 @@ def memoize(shortest_path_func):
 
 
 @memoize
-def shortest_path(start, end, _tail_weight=0, _visited=None, _best_path=None):
+def shortest_path(start, end, _visited=None,
+                  _tail_weight=None,  # weight from the start of the best path
+                  _best_path_weight=None):
     '''Find the shortest path between ``start`` and ``end``.
 
     Parameters
@@ -138,37 +140,45 @@ def shortest_path(start, end, _tail_weight=0, _visited=None, _best_path=None):
         return Path()
     if _visited is None:
         _visited = set()
+    edges_were_skipped = False
 
     for edge in start.edges:
         if edge.node2 not in _visited:
-            new_weight = edge.weight + _tail_weight
             try:
-                keep_going = new_weight < _best_path.weight
-            except AttributeError:  # catches _best_path is None
-                # still no best --> we are forced to keep going
-                path = shortest_path(
-                    edge.node2, end,
-                    _tail_weight=new_weight,
-                    _visited=_visited | {start},
-                )
-                try:
-                    _best_path = Path([edge]) + path
-                except TypeError:  # no path found
-                    pass
+                new_tail_weight = edge.weight + _tail_weight
+            except TypeError:  # catches _tail_weight is None
+                # haven't found a best --> we MUST keep going
+                new_tail_weight = None  # still no tail
             else:
-                if keep_going:
-                    path = shortest_path(
-                        edge.node2, end,
-                        _tail_weight=new_weight,
-                        _visited=_visited | {start},
-                        _best_path=_best_path,
-                    )
-                    try:
-                        _best_path = Path([edge]) + path
-                    except TypeError:  # no path found
-                        pass
+                skip_this_edge = new_tail_weight >= _best_path_weight
+                # move on if weight of a path down this edge will exceed best
+                if skip_this_edge:
+                    edges_were_skipped = True
+                    continue
+            path = shortest_path(
+                edge.node2, end,
+                _visited=_visited | {start},
+                _tail_weight=new_tail_weight,
+                _best_path_weight=_best_path_weight,
+            )
+            try:
+                best_path = Path([edge]) + path
+            except TypeError:  # no path found
+                pass
+            else:
+                _best_path_weight = best_path.weight
+                _tail_weight = 0  # future calls must start counting tail
 
-    return _best_path
+    try:
+        return best_path
+    except NameError:  # never found a path
+        if edges_were_skipped:
+            # the exception gets handled by memoize() wrapper, returning None
+            # but NOT caching result (a path may exist!)
+            raise _IncompleteSearch('although a path may exist, some searches '
+                                    'aborted because the weight exceeded the '
+                                    'current best.')
+        return None
 
 
 @memoize
@@ -230,7 +240,9 @@ def shortest_path_through_network(start, network, _tail_weight=0,
     if new_path_was_found:
         return _best_path
     if edges_were_skipped:
-        raise _IncompleteSearch('search was not exhaustive.')
+        raise _IncompleteSearch('although a path may exist, some searches '
+                                'aborted because the weight exceeded the '
+                                'current best.')
     return None
 
 
