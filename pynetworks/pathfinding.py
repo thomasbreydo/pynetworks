@@ -28,11 +28,9 @@ class Path(list):
         return object.__repr__(self)
 
     def __lt__(self, other):
-        if not isinstance(other, Path):
-            raise TypeError("'<' not supported between instances of"
-                            f'{type(self).__name__!r}  and '
-                            f'{type(other).__name__!r}')
-        return self.weight < other.weight
+        if isinstance(other, Path):
+            return self.weight < other.weight
+        return NotImplemented
 
     @property
     def weight(self):
@@ -150,9 +148,8 @@ def shortest_path(start, end, _visited=None,
                 # haven't found a best --> we MUST keep going
                 new_tail_weight = None  # still no tail
             else:
-                skip_this_edge = new_tail_weight >= _best_path_weight
                 # move on if weight of a path down this edge will exceed best
-                if skip_this_edge:
+                if new_tail_weight >= _best_path_weight:
                     edges_were_skipped = True
                     continue
             path = shortest_path(
@@ -167,8 +164,8 @@ def shortest_path(start, end, _visited=None,
                 pass
             else:
                 _best_path_weight = best_path.weight
-                _tail_weight = 0  # future calls must start counting tail
-
+                # ensure future calls will keep track of tail:
+                _tail_weight = 0  # change it from None to 0
     try:
         return best_path
     except NameError:  # never found a path
@@ -182,8 +179,10 @@ def shortest_path(start, end, _visited=None,
 
 
 @memoize
-def shortest_path_through_network(start, network, _tail_weight=0,
-                                  _visited=None, _best_path=None):
+def shortest_path_through_network(start, network, _visited=None,
+                                  # weight from the start of the best path
+                                  _tail_weight=None,
+                                  _best_path_weight=None):
     '''Find the shortest path from ``start`` through all other
     :class:`Node` objects in ``network``.
 
@@ -209,41 +208,45 @@ def shortest_path_through_network(start, network, _tail_weight=0,
         return Path()
     if _visited is None:
         _visited = set()
-    new_path_was_found = False
     edges_were_skipped = False
 
     for edge in start.edges:
         if edge.node2 not in _visited:
-            new_weight = edge.weight + _tail_weight
             try:
-                skip_this_edge = new_weight >= _best_path.weight
-            except AttributeError:  # catches _best_path is None
-                # still no best --> we MUST to keep going
-                pass
+                new_tail_weight = edge.weight + _tail_weight
+            except TypeError:  # catches _tail_weight is None
+                # haven't found a best --> we MUST keep going
+                new_tail_weight = None  # still no tail
             else:
-                if skip_this_edge:
+                # move on if weight of a path down this edge will exceed best
+                if new_tail_weight >= _best_path_weight:
                     edges_were_skipped = True
                     continue
             path = shortest_path_through_network(
                 edge.node2, reduced_set,
-                _tail_weight=new_weight,
                 _visited=_visited | {start},
-                _best_path=_best_path,
+                _tail_weight=new_tail_weight,
+                _best_path_weight=_best_path_weight,
             )
             try:
-                _best_path = Path([edge]) + path
+                best_path = Path([edge]) + path
             except TypeError:  # no path found
                 pass
             else:
-                new_path_was_found = True
+                _best_path_weight = best_path.weight
+                # ensure future calls will keep track of tail:
+                _tail_weight = 0  # change it from None to 0
 
-    if new_path_was_found:
-        return _best_path
-    if edges_were_skipped:
-        raise _IncompleteSearch('although a path may exist, some searches '
-                                'aborted because the weight exceeded the '
-                                'current best.')
-    return None
+    try:
+        return best_path
+    except NameError:  # never found a path
+        if edges_were_skipped:
+            # the exception gets handled by memoize() wrapper, returning None
+            # but NOT caching result (a path may exist!)
+            raise _IncompleteSearch('although a path may exist, some searches '
+                                    'aborted because the weight exceeded the '
+                                    'current best.')
+        return None
 
 
 @memoize

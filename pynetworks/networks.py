@@ -39,7 +39,7 @@ class Node:
             return dotgraph(edges=self.edges)
         return dotgraph(isolated_nodes=[self])
 
-    def __hash__(self):
+    def __hash__(self):  # TODO: remove __hash__ and __eq__ and see if breaks
         return hash(id(self))
 
     def __eq__(self, other):
@@ -199,7 +199,7 @@ class Network:
                 self.isolated_nodes.add(node)
 
 
-def fully_connected(network):
+def fully_connected(network):  # TODO turn into property attribute of Network
     '''Check if ``network`` is a fully connected network of
     nodes.
 
