@@ -175,8 +175,8 @@ class Network:
 
     @property
     def strongly_connected(self):
-        '''True if every node in this network has a path to every other
-        node.
+        '''``True`` if every node in this network has a path to every
+        other node.
 
         :type bool:
         '''

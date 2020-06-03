@@ -7,7 +7,6 @@ Nodes, Edges, Networks
     :members:
 .. autoclass:: pynetworks.Node
     :members:
-.. autofunction:: pynetworks.fully_connected
 .. autofunction:: pynetworks.generate_network
 
 DOT Representation

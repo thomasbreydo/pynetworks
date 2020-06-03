@@ -8,7 +8,6 @@ nodes using the DOT language for representation.
 from .networks import Edge
 from .networks import Network
 from .networks import Node
-from .networks import fully_connected
 from .networks import generate_network
 from .dot import dotgraph
 from .dot import escape_dot_id
@@ -24,7 +23,6 @@ __version__ = "0.5.3"
 __all__ = ['Edge',
            'Network',
            'Node',
-           'fully_connected',
            'generate_network',
            'dotgraph',
            'escape_dot_id',
