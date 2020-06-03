@@ -39,12 +39,6 @@ class Node:
             return dotgraph(edges=self.edges)
         return dotgraph(isolated_nodes=[self])
 
-    def __hash__(self):  # TODO: remove __hash__ and __eq__ and see if breaks
-        return hash(id(self))
-
-    def __eq__(self, other):
-        return id(self) == id(other)
-
     @property
     def degree(self):
         '''Deegree of this node (number of outgoing edges).
@@ -179,6 +173,20 @@ class Network:
     def __iter__(self):
         yield from self.all_nodes
 
+    @property
+    def strongly_connected(self):
+        '''True if every node in this network has a path to every other
+        node.
+
+        :type bool:
+        '''
+        node_a = random.sample(self, 1)[0]
+        others = self - {node_a}
+        for node in others:
+            if not path_exists(node_a, node):
+                return False
+        return True
+
     def update(self):
         '''Update ``edges`` and ``isolated_nodes``, to be used
         when :class:`Node` objects in this network have changed.
@@ -192,37 +200,14 @@ class Network:
                     if con.reverse() in seen:
                         # just node2 of an already-stored edge --> ignore
                         continue
-                    else:
-                        self.edges.append(con)
-                        seen.add(con)
+                    self.edges.append(con)
+                    seen.add(con)
             else:
                 self.isolated_nodes.add(node)
 
 
-def fully_connected(network):  # TODO turn into property attribute of Network
-    '''Check if ``network`` is a fully connected network of
-    nodes.
-
-    Parameters
-    ----------
-    network : :class:`Network`
-
-    Returns
-    -------
-    bool
-        ``True`` if ``network`` is fully connected, otherwise
-        ``False``.
-    '''
-    node_a = random.sample(network, 1)[0]
-    others = network - {node_a}
-    for node in others:
-        if not path_exists(node_a, node):
-            return False
-    return True
-
-
 def generate_network(n_nodes=10, lower_bound=1, upper_bound=11,
-                     edge_prob=0.8, force_connected=True):
+                     edge_prob=0.8, strongly_connected=True):
     '''Create a :class:`Network` of  :class:`Node` objects.
 
     Parameters
@@ -235,10 +220,10 @@ def generate_network(n_nodes=10, lower_bound=1, upper_bound=11,
         Upper bound (exclusive) for range of edges' weights.
     edges_prob : float, optional
         Probability betweeen 0 and 1 of any two nodes being connected.
-        If ``force_connected`` is set to ``True``, ``edges_prob``
-        may be overridden to ensure a fully-connected network.
-    force_connected : bool
-        If ``False``, output does not need to be a full-connected
+        If ``strongly_connected`` is set to ``True``, ``edges_prob``
+        may be overridden to ensure a strongly connected network.
+    strongly_connected : bool
+        If ``False``, output does not need to be a strongly connected
         network.
 
     Returns
@@ -256,7 +241,7 @@ def generate_network(n_nodes=10, lower_bound=1, upper_bound=11,
             if other_node not in done and random.random() < edge_prob:
                 cur_node.connect(other_node, random.randint(
                     lower_bound, upper_bound - 1))
-    if force_connected:  # if network must be a connected network
+    if strongly_connected:  # all nodes in our network must reach all others
         node_a = random.sample(done, 1)[0]
         others = done - {node_a}
         for node in others:
