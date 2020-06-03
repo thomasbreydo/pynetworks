@@ -72,6 +72,13 @@ def memoize(shortest_path_func):
     >>> shortest_path.cache
     {}
 
+    Calling path-finding functions without caching result.
+
+    >>> old_cache = shortest_path.cache.copy()
+    >>> shortest_path(node_a, node_b, cache=False)
+    >>> shortest_path.cache == old_cache
+    True
+
     Note
     ----
     Supported path-finding functions:
@@ -81,13 +88,18 @@ def memoize(shortest_path_func):
     - :meth:`path_exists`
     '''
     memo = {}
-    # TODO: move into except statemnt +8
     all_params = iter(inspect.signature(shortest_path_func).parameters)
     param1_name = next(all_params)
     param2_name = next(all_params)
 
     @functools.wraps(shortest_path_func)
-    def memoized_shortest_path_func(*args, **kwargs):
+    def memoized_shortest_path_func(*args, save_to_cache=True, **kwargs):
+        if not save_to_cache:
+            try:
+                return shortest_path_func(
+                    *args, save_to_cache=save_to_cache, **kwargs)
+            except _IncompleteSearchFoundNone:
+                return None
         try:
             param1 = args[0]
         except IndexError:  # both cacheable params passed as kwargs
@@ -106,7 +118,8 @@ def memoize(shortest_path_func):
             return memo[cachekey]
         except KeyError:
             try:
-                path = shortest_path_func(*args, **kwargs)
+                path = shortest_path_func(
+                    *args, save_to_cache=save_to_cache, **kwargs)
             except _IncompleteSearchFoundNone:
                 return None  # but don't cache
             else:
@@ -124,8 +137,8 @@ def memoize(shortest_path_func):
     return memoized_shortest_path_func
 
 
-def _continue_recursively(func, start, param2, visited, tail_weight,
-                          best_path_weight):
+def _continue_recursively(func, start, param2, save_to_cache, visited,
+                          tail_weight, best_path_weight):
     if visited is None:
         visited = set()
     edges_were_skipped = False
@@ -144,6 +157,7 @@ def _continue_recursively(func, start, param2, visited, tail_weight,
                     continue
             path = func(
                 edge.node2, param2,
+                save_to_cache=save_to_cache,
                 _visited=visited | {start},
                 _tail_weight=new_tail_weight,
                 _best_path_weight=best_path_weight,
@@ -165,14 +179,17 @@ def _continue_recursively(func, start, param2, visited, tail_weight,
             # but NOT caching result (a path may exist!)
             raise _IncompleteSearchFoundNone(
                 'although a path may exist, some searches aborted because the '
-                'weight exceeded the current best.')
+                'weight exceeded the current best: not caching, returning None'
+            )
         return None
 
 
 @memoize
-def shortest_path(start, end, _visited=None,
+def shortest_path(start, end, *, save_to_cache=True,
+                  _visited=None,
                   _tail_weight=None,  # weight from the start of the best path
-                  _best_path_weight=None):
+                  _best_path_weight=None,
+                  **kwargs):  # allow cache=False in wrapper
     '''Find the shortest path between ``start`` and ``end``.
 
     Parameters
@@ -191,55 +208,15 @@ def shortest_path(start, end, _visited=None,
 
     return _continue_recursively(func=shortest_path,
                                  start=start, param2=end,
+                                 save_to_cache=save_to_cache,
                                  visited=_visited,
                                  tail_weight=_tail_weight,
                                  best_path_weight=_best_path_weight)
 
-    # if _visited is None:
-    #     _visited = set()
-    # edges_were_skipped = False
-
-    # for edge in start.edges:
-    #     if edge.node2 not in _visited:
-    #         try:
-    #             new_tail_weight = edge.weight + _tail_weight
-    #         except TypeError:  # catches _tail_weight is None
-    #             # haven't found a best --> we MUST keep going
-    #             new_tail_weight = None  # still no tail
-    #         else:
-    #             # move on if weight of a path down this edge will exceed best
-    #             if new_tail_weight >= _best_path_weight:
-    #                 edges_were_skipped = True
-    #                 continue
-    #         path = shortest_path(
-    #             edge.node2, end,
-    #             _visited=_visited | {start},
-    #             _tail_weight=new_tail_weight,
-    #             _best_path_weight=_best_path_weight,
-    #         )
-    #         try:
-    #             best_path = Path([edge]) + path
-    #         except TypeError:  # no path found
-    #             pass
-    #         else:
-    #             _best_path_weight = best_path.weight
-    #             # ensure future calls will keep track of tail:
-    #             _tail_weight = 0  # change it from None to 0
-
-    # try:
-    #     return best_path
-    # except NameError:  # never found a path
-    #     if edges_were_skipped:
-    #         # the exception gets handled by memoize() wrapper, returning None
-    #         # but NOT caching result (a path may exist!)
-    #         raise _IncompleteSearchFoundNone(
-    #             'although a path may exist, some searches aborted because the '
-    #             'weight exceeded the current best.')
-    #     return None
-
 
 @memoize
-def shortest_path_through_network(start, network, _visited=None,
+def shortest_path_through_network(start, network, *, save_to_cache=True,
+                                  _visited=None,
                                   # weight from the start of the best path
                                   _tail_weight=None,
                                   _best_path_weight=None):
@@ -269,55 +246,14 @@ def shortest_path_through_network(start, network, _visited=None,
 
     return _continue_recursively(func=shortest_path_through_network,
                                  start=start, param2=reduced_set,
+                                 save_to_cache=save_to_cache,
                                  visited=_visited,
                                  tail_weight=_tail_weight,
                                  best_path_weight=_best_path_weight)
 
-    # if _visited is None:
-    #     _visited = set()
-    # edges_were_skipped = False
-
-    # for edge in start.edges:
-    #     if edge.node2 not in _visited:
-    #         try:
-    #             new_tail_weight = edge.weight + _tail_weight
-    #         except TypeError:  # catches _tail_weight is None
-    #             # haven't found a best --> we MUST keep going
-    #             new_tail_weight = None  # still no tail
-    #         else:
-    #             # move on if weight of a path down this edge will exceed best
-    #             if new_tail_weight >= _best_path_weight:
-    #                 edges_were_skipped = True
-    #                 continue
-    #         path = shortest_path_through_network(
-    #             edge.node2, reduced_set,
-    #             _visited=_visited | {start},
-    #             _tail_weight=new_tail_weight,
-    #             _best_path_weight=_best_path_weight,
-    #         )
-    #         try:
-    #             best_path = Path([edge]) + path
-    #         except TypeError:  # no path found
-    #             pass
-    #         else:
-    #             _best_path_weight = best_path.weight
-    #             # ensure future calls will keep track of tail:
-    #             _tail_weight = 0  # change it from None to 0
-
-    # try:
-    #     return best_path
-    # except NameError:  # never found a path
-    #     if edges_were_skipped:
-    #         # the exception gets handled by memoize() wrapper, returning None
-    #         # but NOT caching result (a path may exist!)
-    #         raise _IncompleteSearchFoundNone(
-    #             'although a path may exist, some searches aborted because the '
-    #             'weight exceeded the current best.')
-    #     return None
-
 
 @memoize
-def path_exists(start, end, _visited=None):
+def path_exists(start, end, *, save_to_cache=True, _visited=None):
     '''Check if a path exists between ``start`` and ``end``.
 
     Parameters
@@ -338,6 +274,7 @@ def path_exists(start, end, _visited=None):
 
     for edge in start.edges:
         if edge.node2 not in _visited:
-            if path_exists(edge.node2, end, _visited=_visited | {start}):
+            if path_exists(edge.node2, end, save_to_cache=save_to_cache,
+                           _visited=_visited | {start}):
                 return True
     return False

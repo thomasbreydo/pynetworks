@@ -261,10 +261,8 @@ def generate_network(n_nodes=10, lower_bound=1, upper_bound=11,
         node_a = random.sample(done, 1)[0]
         others = done - {node_a}
         for node in others:
-            if not path_exists(node_a, node):
+            if not path_exists(node_a, node, save_to_cache=False):
                 node.connect(node_a, random.randint(
                     lower_bound, upper_bound - 1))
-                path_exists.cache_clear()
-        # TODO: reset cache to previous state
 
     return Network(done)
