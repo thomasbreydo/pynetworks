@@ -188,8 +188,7 @@ def _continue_recursively(func, start, param2, save_to_cache, visited,
 def shortest_path(start, end, *, save_to_cache=True,
                   _visited=None,
                   _tail_weight=None,  # weight from the start of the best path
-                  _best_path_weight=None,
-                  **kwargs):  # allow cache=False in wrapper
+                  _best_path_weight=None):
     '''Find the shortest path between ``start`` and ``end``.
 
     Parameters
