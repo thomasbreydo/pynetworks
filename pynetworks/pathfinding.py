@@ -42,7 +42,7 @@ class Path(list):
         return sum(edge.weight for edge in self)
 
 
-class _IncompleteSearch(Exception):
+class _IncompleteSearchFoundNone(Exception):
     pass
 
 
@@ -100,7 +100,7 @@ def memoize(shortest_path_func):
         except KeyError:
             try:
                 path = shortest_path_func(*args, **kwargs)
-            except _IncompleteSearch:
+            except _IncompleteSearchFoundNone:
                 return None  # but don't cache
             else:
                 memo[cachekey] = path
@@ -115,6 +115,51 @@ def memoize(shortest_path_func):
     This function is cached by the :meth:`memoize` function.
     '''
     return memoized_shortest_path_func
+
+
+def _continue_recursively(func, start, param2, visited, tail_weight,
+                          best_path_weight):
+    if visited is None:
+        visited = set()
+    edges_were_skipped = False
+
+    for edge in start.edges:
+        if edge.node2 not in visited:
+            try:
+                new_tail_weight = edge.weight + tail_weight
+            except TypeError:  # catches _tail_weight is None
+                # haven't found a best --> we MUST keep going
+                new_tail_weight = None  # still no tail
+            else:
+                # move on if weight of a path down this edge will exceed best
+                if new_tail_weight >= best_path_weight:
+                    edges_were_skipped = True
+                    continue
+            path = func(
+                edge.node2, param2,
+                _visited=visited | {start},
+                _tail_weight=new_tail_weight,
+                _best_path_weight=best_path_weight,
+            )
+            try:
+                best_path = Path([edge]) + path
+            except TypeError:  # no path found
+                pass
+            else:
+                _best_path_weight = best_path.weight
+                # ensure future calls will keep track of tail:
+                _tail_weight = 0  # change it from None to 0
+
+    try:
+        return best_path
+    except NameError:  # never found a path
+        if edges_were_skipped:
+            # the exception gets handled by memoize() wrapper, returning None
+            # but NOT caching result (a path may exist!)
+            raise _IncompleteSearchFoundNone(
+                'although a path may exist, some searches aborted because the '
+                'weight exceeded the current best.')
+        return None
 
 
 @memoize
@@ -136,46 +181,54 @@ def shortest_path(start, end, _visited=None,
     '''
     if start is end:
         return Path()
-    if _visited is None:
-        _visited = set()
-    edges_were_skipped = False
 
-    for edge in start.edges:
-        if edge.node2 not in _visited:
-            try:
-                new_tail_weight = edge.weight + _tail_weight
-            except TypeError:  # catches _tail_weight is None
-                # haven't found a best --> we MUST keep going
-                new_tail_weight = None  # still no tail
-            else:
-                # move on if weight of a path down this edge will exceed best
-                if new_tail_weight >= _best_path_weight:
-                    edges_were_skipped = True
-                    continue
-            path = shortest_path(
-                edge.node2, end,
-                _visited=_visited | {start},
-                _tail_weight=new_tail_weight,
-                _best_path_weight=_best_path_weight,
-            )
-            try:
-                best_path = Path([edge]) + path
-            except TypeError:  # no path found
-                pass
-            else:
-                _best_path_weight = best_path.weight
-                # ensure future calls will keep track of tail:
-                _tail_weight = 0  # change it from None to 0
-    try:
-        return best_path
-    except NameError:  # never found a path
-        if edges_were_skipped:
-            # the exception gets handled by memoize() wrapper, returning None
-            # but NOT caching result (a path may exist!)
-            raise _IncompleteSearch('although a path may exist, some searches '
-                                    'aborted because the weight exceeded the '
-                                    'current best.')
-        return None
+    return _continue_recursively(func=shortest_path,
+                                 start=start, param2=end,
+                                 visited=_visited,
+                                 tail_weight=_tail_weight,
+                                 best_path_weight=_best_path_weight)
+
+    # if _visited is None:
+    #     _visited = set()
+    # edges_were_skipped = False
+
+    # for edge in start.edges:
+    #     if edge.node2 not in _visited:
+    #         try:
+    #             new_tail_weight = edge.weight + _tail_weight
+    #         except TypeError:  # catches _tail_weight is None
+    #             # haven't found a best --> we MUST keep going
+    #             new_tail_weight = None  # still no tail
+    #         else:
+    #             # move on if weight of a path down this edge will exceed best
+    #             if new_tail_weight >= _best_path_weight:
+    #                 edges_were_skipped = True
+    #                 continue
+    #         path = shortest_path(
+    #             edge.node2, end,
+    #             _visited=_visited | {start},
+    #             _tail_weight=new_tail_weight,
+    #             _best_path_weight=_best_path_weight,
+    #         )
+    #         try:
+    #             best_path = Path([edge]) + path
+    #         except TypeError:  # no path found
+    #             pass
+    #         else:
+    #             _best_path_weight = best_path.weight
+    #             # ensure future calls will keep track of tail:
+    #             _tail_weight = 0  # change it from None to 0
+
+    # try:
+    #     return best_path
+    # except NameError:  # never found a path
+    #     if edges_were_skipped:
+    #         # the exception gets handled by memoize() wrapper, returning None
+    #         # but NOT caching result (a path may exist!)
+    #         raise _IncompleteSearchFoundNone(
+    #             'although a path may exist, some searches aborted because the '
+    #             'weight exceeded the current best.')
+    #     return None
 
 
 @memoize
@@ -206,47 +259,54 @@ def shortest_path_through_network(start, network, _visited=None,
         reduced_set = network - {start}
     if not reduced_set:
         return Path()
-    if _visited is None:
-        _visited = set()
-    edges_were_skipped = False
 
-    for edge in start.edges:
-        if edge.node2 not in _visited:
-            try:
-                new_tail_weight = edge.weight + _tail_weight
-            except TypeError:  # catches _tail_weight is None
-                # haven't found a best --> we MUST keep going
-                new_tail_weight = None  # still no tail
-            else:
-                # move on if weight of a path down this edge will exceed best
-                if new_tail_weight >= _best_path_weight:
-                    edges_were_skipped = True
-                    continue
-            path = shortest_path_through_network(
-                edge.node2, reduced_set,
-                _visited=_visited | {start},
-                _tail_weight=new_tail_weight,
-                _best_path_weight=_best_path_weight,
-            )
-            try:
-                best_path = Path([edge]) + path
-            except TypeError:  # no path found
-                pass
-            else:
-                _best_path_weight = best_path.weight
-                # ensure future calls will keep track of tail:
-                _tail_weight = 0  # change it from None to 0
+    return _continue_recursively(func=shortest_path_through_network,
+                                 start=start, param2=reduced_set,
+                                 visited=_visited,
+                                 tail_weight=_tail_weight,
+                                 best_path_weight=_best_path_weight)
 
-    try:
-        return best_path
-    except NameError:  # never found a path
-        if edges_were_skipped:
-            # the exception gets handled by memoize() wrapper, returning None
-            # but NOT caching result (a path may exist!)
-            raise _IncompleteSearch('although a path may exist, some searches '
-                                    'aborted because the weight exceeded the '
-                                    'current best.')
-        return None
+    # if _visited is None:
+    #     _visited = set()
+    # edges_were_skipped = False
+
+    # for edge in start.edges:
+    #     if edge.node2 not in _visited:
+    #         try:
+    #             new_tail_weight = edge.weight + _tail_weight
+    #         except TypeError:  # catches _tail_weight is None
+    #             # haven't found a best --> we MUST keep going
+    #             new_tail_weight = None  # still no tail
+    #         else:
+    #             # move on if weight of a path down this edge will exceed best
+    #             if new_tail_weight >= _best_path_weight:
+    #                 edges_were_skipped = True
+    #                 continue
+    #         path = shortest_path_through_network(
+    #             edge.node2, reduced_set,
+    #             _visited=_visited | {start},
+    #             _tail_weight=new_tail_weight,
+    #             _best_path_weight=_best_path_weight,
+    #         )
+    #         try:
+    #             best_path = Path([edge]) + path
+    #         except TypeError:  # no path found
+    #             pass
+    #         else:
+    #             _best_path_weight = best_path.weight
+    #             # ensure future calls will keep track of tail:
+    #             _tail_weight = 0  # change it from None to 0
+
+    # try:
+    #     return best_path
+    # except NameError:  # never found a path
+    #     if edges_were_skipped:
+    #         # the exception gets handled by memoize() wrapper, returning None
+    #         # but NOT caching result (a path may exist!)
+    #         raise _IncompleteSearchFoundNone(
+    #             'although a path may exist, some searches aborted because the '
+    #             'weight exceeded the current best.')
+    #     return None
 
 
 @memoize

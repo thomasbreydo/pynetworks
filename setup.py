@@ -1,6 +1,3 @@
-from setuptools import setup, find_packages
+from setuptools import setup
 
-setup(
-    version='0.6.0',
-    packages=find_packages(),
-)
+setup()  # Metadata is in setup.cfg
