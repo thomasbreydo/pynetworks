@@ -1,4 +1,5 @@
 import random
+import pyperclip
 from .dot import dotgraph
 from .dot import escape_dot_id
 from .pathfinding import path_exists
@@ -75,6 +76,11 @@ class Node:
         '''Disconnect from all connected :class:`Node` objects.'''
         self.edges = []
 
+    def copy_to_clipboard(self):
+        '''Copy the DOT language representation of this :class:`Node`
+        to the native clipboard.'''
+        pyperclip.copy(str(self))
+
 
 class Edge:
     '''Represent an optionally weighted edge between two
@@ -139,6 +145,11 @@ class Edge:
         if self.weight:
             return unlabeled + f' [label={self.weight}]'
         return unlabeled
+
+    def copy_to_clipboard(self):
+        '''Copy the DOT language representation of this :class:`Edge`
+        to the native clipboard.'''
+        pyperclip.copy(str(self))
 
 
 class Network:
@@ -205,6 +216,11 @@ class Network:
             else:
                 self.isolated_nodes.add(node)
 
+    def copy_to_clipboard(self):
+        '''Copy the DOT language representation of this :class:`Network`
+        to the native clipboard.'''
+        pyperclip.copy(str(self))
+
 
 def generate_network(n_nodes=10, lower_bound=1, upper_bound=11,
                      edge_prob=0.8, strongly_connected=True):
@@ -249,5 +265,6 @@ def generate_network(n_nodes=10, lower_bound=1, upper_bound=11,
                 node.connect(node_a, random.randint(
                     lower_bound, upper_bound - 1))
                 path_exists.cache_clear()
+        # TODO: reset cache to previous state
 
     return Network(done)

@@ -1,5 +1,6 @@
 import inspect
 import functools
+import pyperclip
 from .dot import dotgraph
 
 
@@ -41,6 +42,11 @@ class Path(list):
         '''
         return sum(edge.weight for edge in self)
 
+    def copy_to_clipboard(self):
+        '''Copy the DOT language representation of this :class:`Path` to
+        the native clipboard.'''
+        pyperclip.copy(str(self))
+
 
 class _IncompleteSearchFoundNone(Exception):
     pass
@@ -75,6 +81,7 @@ def memoize(shortest_path_func):
     - :meth:`path_exists`
     '''
     memo = {}
+    # TODO: move into except statemnt +8
     all_params = iter(inspect.signature(shortest_path_func).parameters)
     param1_name = next(all_params)
     param2_name = next(all_params)
@@ -146,9 +153,9 @@ def _continue_recursively(func, start, param2, visited, tail_weight,
             except TypeError:  # no path found
                 pass
             else:
-                _best_path_weight = best_path.weight
+                best_path_weight = best_path.weight
                 # ensure future calls will keep track of tail:
-                _tail_weight = 0  # change it from None to 0
+                tail_weight = 0  # change it from None to 0
 
     try:
         return best_path

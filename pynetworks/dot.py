@@ -33,7 +33,7 @@ def dotgraph(isolated_nodes=None, edges=None, name=''):
     edges : list of :class:`Edge`, optional
         Edges to graph.
     name : optional
-        Name of the returned dotgraph.
+        Name of the returned DOT graph.
 
     Returns
     -------
