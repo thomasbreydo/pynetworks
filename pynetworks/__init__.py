@@ -18,7 +18,7 @@ from .pathfinding import shortest_path
 from .pathfinding import shortest_path_through_network
 
 
-__version__ = "0.6.0"
+__version__ = "0.6.1"
 
 __all__ = ['Edge',
            'Network',
