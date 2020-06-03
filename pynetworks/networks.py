@@ -178,7 +178,7 @@ class Network:
         '''``True`` if every node in this network has a path to every
         other node.
 
-        :type bool:
+        :type: bool
         '''
         node_a = random.sample(self, 1)[0]
         others = self - {node_a}
