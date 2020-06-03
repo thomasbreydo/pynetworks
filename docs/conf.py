@@ -22,8 +22,8 @@ project = 'pynetworks'
 copyright = '2020, Thomas Breydo'
 author = 'Thomas Breydo'
 
-# The full version, including alpha/beta/rc tags
-release = '0.6.0'
+# Sets 'release' to the full version, not moving import to top of file
+from pynetworks import __version__ as release  # noqa: E402
 
 
 # -- General configuration ---------------------------------------------------
