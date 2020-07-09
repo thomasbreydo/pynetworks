@@ -20,7 +20,7 @@ def escape_dot_id(string):
     '"A\\"B"'
     '''
 
-    return '"' + re.sub(r'([\\"])', r'\\\1', string) + '"'
+    return '"' + re.sub(R'([\\"])', R'\\\1', string) + '"'
 
 
 def dotgraph(isolated_nodes=None, edges=None, name=''):
