@@ -142,7 +142,7 @@ class Edge:
         '''
         unlabeled = (f'{escape_dot_id(self.node1.name)} -- '
                      f'{escape_dot_id(self.node2.name)}')
-        if self.weight:
+        if self.weight is not None:
             return unlabeled + f' [label={self.weight}]'
         return unlabeled
 

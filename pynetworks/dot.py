@@ -68,6 +68,6 @@ def dotgraph(isolated_nodes=None, edges=None, name=''):
 
     nodes = '\n\t'.join([escape_dot_id(node.name) for node in isolated_nodes])
     middle = '\n\t' if isolated_nodes and edges else ''
-    edges = '\n\t'.join([con.dot() for con in edges])
+    edges = '\n\t'.join([edge.dot() for edge in edges])
     return (f'graph {f"{escape_dot_id(name)} " if name else ""}'
             f'{{\n\t{nodes}{middle}{edges}\n}}')
