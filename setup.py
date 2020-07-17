@@ -1,3 +1,7 @@
 from setuptools import setup
 
-setup()  # Metadata is in setup.cfg
+setup(
+    install_requires=[
+        'pyperclip>=1.8.0',
+    ]
+)  # Metadata is in setup.cfg
